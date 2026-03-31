@@ -1,0 +1,9 @@
+[submodule "dls2"]
+	path = dls2
+	url = git@github.com:iit-DLSLab/dls2.git
+[submodule "robotlib"]
+	path = robotlib
+	url = git@github.com:iit-DLSLab/robotlib.git
+[submodule "gluecode"]
+	path = gluecode
+	url = git@github.com:iit-DLSLab/gluecode.git
