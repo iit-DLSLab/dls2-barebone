@@ -1,0 +1,19 @@
+name: Build Test
+
+# # This workflow uses actions that are not certified by GitHub.
+# # They are provided by a third-party and are governed by
+# # separate terms of service, privacy policy, and support
+# # documentation.
+
+on:
+  pull_request:
+    branches: [ "main" ]
+  
+jobs:
+  build_test: 
+    uses: iit-DLSLab/cicd_tools/.github/workflows/dls2_build_test.yml@main
+    with:
+      test-command: "ls"
+    secrets:
+      GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
+      CICD_PAT: ${{ secrets.CICD_PAT }}
