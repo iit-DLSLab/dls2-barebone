@@ -15,4 +15,5 @@ jobs:
     with:
       package-name: "dls2"
       deb-script-path: "scripts/create-deb-deploy.sh"
-    secrets: inherit
+    secrets:
+      CICD_PAT: ${{ secrets.CICD_PAT }}
