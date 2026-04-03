@@ -11,9 +11,6 @@ env:
 
 jobs:
   create-release-ci-cd:
-    permissions:
-      contents: write
-      packages: write
     uses: iit-DLSLab/cicd_tools/.github/workflows/create-release-deb.yml@main
     with:
       package-name: "dls2"
