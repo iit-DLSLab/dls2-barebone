@@ -15,5 +15,6 @@ jobs:
     with:
       package-name: "dls2"
       deb-script-path: "scripts/create-deb-deploy.sh"
+      container: "ghcr.io/iit-dlslab/dls2-dev:latest"
     secrets:
-      CICD_PAT: ${{ secrets.CICD_PAT }}
+      CICD_PAT: ${{ secrets.CICD_PAT }}  
