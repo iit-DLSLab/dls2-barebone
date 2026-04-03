@@ -59,6 +59,14 @@ done
 mkdir -p "${ART_DIR}"
 rm -f "${DEB_PATH}" "${ART_DIR}/pkg_files.txt" "${BUILD_LOG}"
 
+for required_dir in dls2 robotlib gluecode; do
+  if [[ ! -f "${ROOT_DIR}/${required_dir}/CMakeLists.txt" ]]; then
+    echo "ERROR: missing ${required_dir}/CMakeLists.txt under ${ROOT_DIR}."
+    echo "Hint: submodules are not checked out on this runner."
+    exit 1
+  fi
+done
+
 run_pipeline() {
   local build_dir="${ROOT_DIR}/build"
   local stage_dir="${ROOT_DIR}/.deb_stage"
@@ -89,18 +97,7 @@ run_pipeline() {
     cmake --build "${build_dir}" -- "${build_user_args[@]}"
   fi
 
-  # Expected setcap warnings during staged install are tolerated.
   DESTDIR="${stage_dir}" cmake --install "${build_dir}"
-
-  # Ensure robot description assets are packaged when available.
-  if [[ -d "${ROOT_DIR}/robots/aliengo/aliengo-description" ]]; then
-    mkdir -p "${stage_dir}/usr/include/aliengo_description"
-    for dir in gazebo launch meshes robcogen robots rviz urdfs yarf foxglove default_postures kinematics; do
-      if [[ -d "${ROOT_DIR}/robots/aliengo/aliengo-description/${dir}" ]]; then
-        cp -a "${ROOT_DIR}/robots/aliengo/aliengo-description/${dir}" "${stage_dir}/usr/include/aliengo_description/"
-      fi
-    done
-  fi
 
   strip "${stage_dir}/usr/bin/dls2/dynamic_legged_systems_framework" || true
   strip "${stage_dir}/usr/bin/dls2/child_process_launcher" || true
@@ -128,7 +125,7 @@ run_pipeline() {
     [[ -e "${target}" ]] || return 0
     (ldd "${target}" 2>/dev/null || true) \
       | awk '
-          /=> \// {print $3}
+          /=> \/ {print $3}
           /^\// {print $1}
         ' \
       | sort -u \
@@ -150,7 +147,6 @@ run_pipeline() {
               copy_into_stage "${lib}"
               ;;
             *)
-              # Avoid bundling core distro libs from /lib and /usr/lib.
               ;;
           esac
         done
@@ -177,9 +173,6 @@ run_pipeline() {
     copy_ldd_closure "${stage_dir}/usr/bin/dls"
   fi
 
-  # Patch launcher script:
-  # - prioritize packaged runtime paths
-  # - make FastDDS cleanup best-effort
   if [[ -f "${stage_dir}/usr/bin/dls" ]]; then
     awk '
       NR == 1 {
@@ -224,8 +217,12 @@ EOCONTROL
 set -e
 
 if command -v setcap >/dev/null 2>&1; then
-  setcap cap_sys_nice=eip /usr/bin/dls2/dynamic_legged_systems_framework || true
-  setcap cap_sys_nice=eip /usr/bin/dls2/child_process_launcher || true
+  if [ -f /usr/bin/dls2/dynamic_legged_systems_framework ]; then
+    setcap cap_sys_nice=eip /usr/bin/dls2/dynamic_legged_systems_framework || true
+  fi
+  if [ -f /usr/bin/dls2/child_process_launcher ]; then
+    setcap cap_sys_nice=eip /usr/bin/dls2/child_process_launcher || true
+  fi
 fi
 
 if command -v ldconfig >/dev/null 2>&1; then
@@ -255,17 +252,21 @@ EOPOSTINST
 
 echo "[build] building and packaging on host in ${ROOT_DIR}"
 if [[ "${LIVE_BUILD_OUTPUT}" == "1" ]]; then
-  if ! run_pipeline 2>&1 | tee "${BUILD_LOG}"; then
-    echo "ERROR: build/package failed. See ${BUILD_LOG}"
-    tail -n 120 "${BUILD_LOG}" || true
-    exit 1
-  fi
+  set +e
+  run_pipeline > >(tee "${BUILD_LOG}") 2>&1
+  rc=$?
+  set -e
 else
-  if ! run_pipeline > "${BUILD_LOG}" 2>&1; then
-    echo "ERROR: build/package failed. See ${BUILD_LOG}"
-    tail -n 120 "${BUILD_LOG}" || true
-    exit 1
-  fi
+  set +e
+  run_pipeline > "${BUILD_LOG}" 2>&1
+  rc=$?
+  set -e
+fi
+
+if [[ ${rc} -ne 0 ]]; then
+  echo "ERROR: build/package failed. See ${BUILD_LOG}"
+  tail -n 120 "${BUILD_LOG}" || true
+  exit ${rc}
 fi
 
 if [[ ! -f "${DEB_PATH}" ]]; then
