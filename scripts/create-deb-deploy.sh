@@ -71,11 +71,6 @@ run_pipeline() {
   local build_dir="${ROOT_DIR}/build"
   local stage_dir="${ROOT_DIR}/.deb_stage"
 
-  cleanup_stage() {
-    rm -rf "${stage_dir}" "${ROOT_DIR}/stage"
-  }
-  trap cleanup_stage EXIT
-
   if [[ "${CLEAN_BUILD}" == "1" ]]; then
     rm -rf "${build_dir}"
   fi
