@@ -1,0 +1,20 @@
+name: Create Release and .deb Files Project
+
+on:
+  push:
+      tags:
+        - 'v*.*.*'
+        - 'v*.*.*-rc*'
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  GNUTLS_CPUID_OVERRIDE: 0x1
+
+
+jobs:
+  create-release-ci-cd:
+    uses: iit-DLSLab/cicd_tools/.github/workflows/create-release-deb.yml@main
+    with:
+      package-name: "dls2"
+      deb-script-path: "scripts/create-deb-deploy.sh"
