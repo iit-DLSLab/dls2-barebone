@@ -5,6 +5,8 @@ on:
       tags:
         - 'v*.*.*'
         - 'v*.*.*-rc*'
+  pull_request:
+    branches: [ "main" ]
 
 env:
   GNUTLS_CPUID_OVERRIDE: 0x1
