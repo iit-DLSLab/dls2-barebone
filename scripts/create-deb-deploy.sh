@@ -79,6 +79,7 @@ run_pipeline() {
   local build_user_args=(${BUILD_ARGS})
 
   cmake -S "${ROOT_DIR}" -B "${build_dir}" -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX=/ \
     "${CMAKE_DEPLOY_ARGS[@]}" \
     "${cmake_user_args[@]}"
 
@@ -89,7 +90,7 @@ run_pipeline() {
   fi
 
   # Expected setcap warnings during staged install are tolerated.
-  DESTDIR="${stage_dir}" cmake --install "${build_dir}" || true
+  DESTDIR="${stage_dir}" cmake --install "${build_dir}"
 
   # Ensure robot description assets are packaged when available.
   if [[ -d "${ROOT_DIR}/robots/aliengo/aliengo-description" ]]; then
