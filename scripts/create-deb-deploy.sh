@@ -17,6 +17,52 @@ ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 ART_DIR="${ROOT_DIR}/deb_pipeline_artifacts"
 BUILD_LOG="${ART_DIR}/build.log"
 
+usage() {
+  cat <<'EOF'
+Usage: create-deb-deploy.sh [--with-headers | --without-headers]
+
+Options:
+  --with-headers     Keep installed header files in the generated .deb.
+  --without-headers  Exclude installed *.h, *.hpp, and *.tpp files from the .deb.
+  -h, --help         Show this help message.
+
+Environment:
+  INCLUDE_HEADERS=1|0  Default header inclusion mode when no CLI flag is passed.
+EOF
+}
+
+INCLUDE_HEADERS="${INCLUDE_HEADERS:-1}"
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --with-headers)
+      INCLUDE_HEADERS="1"
+      shift
+      ;;
+    --without-headers)
+      INCLUDE_HEADERS="0"
+      shift
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      echo "ERROR: unknown argument '$1'"
+      usage
+      exit 1
+      ;;
+  esac
+done
+
+case "${INCLUDE_HEADERS}" in
+  0|1)
+    ;;
+  *)
+    echo "ERROR: INCLUDE_HEADERS must be 0 or 1, got '${INCLUDE_HEADERS}'"
+    exit 1
+    ;;
+esac
+
 VERSION="${VERSION_OVERRIDE:-0.0.0-local}"
 DEB_CONTROL_VERSION="$(echo "${VERSION}" | sed -E 's/^[^0-9]*//')"
 if [[ -z "${DEB_CONTROL_VERSION}" ]]; then
@@ -27,7 +73,7 @@ fi
 PACKAGE_NAME="${PACKAGE_NAME:-dls2}"
 MAINTAINER="${DEB_MAINTAINER:-Michele Pestarino <michele.pestarino@iit.it>}"
 PACKAGE_DESCRIPTION="${DEB_DESCRIPTION:-DLS2 runtime package}"
-DEB_DEPENDS="${DEB_DEPENDS:-python3, python3-psutil, libyaml-cpp0.8, libtinyxml2-10, libgtk-3-0, libcairo2, libglib2.0-0, libboost-filesystem1.83.0, libconsole-bridge1.0, libcap2-bin}"
+DEB_DEPENDS="${DEB_DEPENDS:-python3, python3-psutil, libyaml-cpp0.8, libtinyxml2-10, libgtk-3-0t64 | libgtk-3-0, libcairo2, libglib2.0-0t64 | libglib2.0-0, libboost-filesystem1.83.0, libconsole-bridge1.0, libcap2-bin}"
 
 DEB_NAME="${PACKAGE_NAME}_${VERSION}_amd64.deb"
 DEB_PATH="${ROOT_DIR}/${DEB_NAME}"
@@ -93,6 +139,13 @@ run_pipeline() {
   fi
 
   DESTDIR="${stage_dir}" cmake --install "${build_dir}"
+
+  if [[ "${INCLUDE_HEADERS}" == "0" && -d "${stage_dir}/usr/include" ]]; then
+    find "${stage_dir}/usr/include" -type f \
+      \( -name '*.h' -o -name '*.hpp' -o -name '*.tpp' \) \
+      -delete
+    find "${stage_dir}/usr/include" -depth -type d -empty -delete
+  fi
 
   strip "${stage_dir}/usr/bin/dls2/dynamic_legged_systems_framework" || true
   strip "${stage_dir}/usr/bin/dls2/child_process_launcher" || true
@@ -228,6 +281,18 @@ exit 0
 EOPOSTINST
   chmod 0755 "${stage_dir}/DEBIAN/postinst"
 
+  if ! find "${stage_dir}" -mindepth 1 \
+    ! -path "${stage_dir}/DEBIAN" \
+    ! -path "${stage_dir}/DEBIAN/*" \
+    ! -path "${stage_dir}/etc" \
+    ! -path "${stage_dir}/etc/profile.d" \
+    ! -path "${stage_dir}/etc/profile.d/dls2.sh" \
+    -print -quit | grep -q .; then
+    echo "ERROR: staged package payload is empty."
+    echo "Hint: cmake configure/build/install likely failed earlier, or the build cache points to a different source tree."
+    return 1
+  fi
+
   dpkg-deb --build "${stage_dir}" "${DEB_NAME}"
 
   dpkg-deb -c "${DEB_NAME}" \
@@ -246,16 +311,19 @@ EOPOSTINST
 }
 
 echo "[build] building and packaging on host in ${ROOT_DIR}"
+echo "[build] include headers: ${INCLUDE_HEADERS}"
 if [[ "${LIVE_BUILD_OUTPUT}" == "1" ]]; then
-  set +e
-  run_pipeline > >(tee "${BUILD_LOG}") 2>&1
-  rc=$?
-  set -e
+  if run_pipeline > >(tee "${BUILD_LOG}") 2>&1; then
+    rc=0
+  else
+    rc=$?
+  fi
 else
-  set +e
-  run_pipeline > "${BUILD_LOG}" 2>&1
-  rc=$?
-  set -e
+  if run_pipeline > "${BUILD_LOG}" 2>&1; then
+    rc=0
+  else
+    rc=$?
+  fi
 fi
 
 if [[ ${rc} -ne 0 ]]; then
