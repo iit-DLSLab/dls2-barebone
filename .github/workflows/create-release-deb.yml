@@ -9,8 +9,22 @@ on:
 env:
   GNUTLS_CPUID_OVERRIDE: 0x1
 
+permissions:
+  contents: write
+  packages: write
+  id-token: write
+
 jobs:
-  create-release-ci-cd:
+
+  build_test: 
+    uses: iit-DLSLab/cicd_tools/.github/workflows/dls2_build_test.yml@main
+    with:
+      test-command: "ls"
+    secrets:
+      GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
+      CICD_PAT: ${{ secrets.CICD_PAT }}
+
+  release_deb:
     uses: iit-DLSLab/cicd_tools/.github/workflows/create-release-deb.yml@main
     with:
       package-name: "dls2"
@@ -18,3 +32,22 @@ jobs:
       container: "ghcr.io/iit-dlslab/dls2-dev:latest"
     secrets:
       CICD_PAT: ${{ secrets.CICD_PAT }}  
+
+  publish_image:
+    needs: release_deb
+    uses: iit-DLSLab/cicd_tools/.github/workflows/docker-publish.yml@main
+    with:
+      image_name: dls2-dev-deb
+      registry: ghcr.io
+      context: external-docker/dockerfiles/dls2-dev-deb
+      dockerfile: external-docker/dockerfiles/dls2-dev-deb/Dockerfile
+      tag_override: ${{ needs.release_deb.outputs.version_tag }}
+      workflow_artifact_name: ${{ needs.release_deb.outputs.deb_workflow_artifact_name }}
+      artifact_download_path: external-docker/dockerfiles/dls2-dev-deb
+      extra_checkout_repository: iit-DLSLab/dls_docker
+      extra_checkout_ref: main
+      extra_checkout_path: external-docker
+      extra_build_args: |
+        DLS2_DEB_FILE=${{ needs.release_deb.outputs.deb_artifact_name }}
+    secrets:
+      CICD_PAT: ${{ secrets.CICD_PAT }}
