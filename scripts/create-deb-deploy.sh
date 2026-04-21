@@ -27,11 +27,13 @@ Options:
   -h, --help         Show this help message.
 
 Environment:
-  INCLUDE_HEADERS=1|0  Default header inclusion mode when no CLI flag is passed.
+  INCLUDE_HEADERS=1|0   Default header inclusion mode when no CLI flag is passed.
+  REUSE_BUILD=auto|1|0  Reuse an existing build directory when possible. Defaults to auto.
 EOF
 }
 
 INCLUDE_HEADERS="${INCLUDE_HEADERS:-1}"
+REUSE_BUILD="${REUSE_BUILD:-auto}"
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --with-headers)
@@ -59,6 +61,15 @@ case "${INCLUDE_HEADERS}" in
     ;;
   *)
     echo "ERROR: INCLUDE_HEADERS must be 0 or 1, got '${INCLUDE_HEADERS}'"
+    exit 1
+    ;;
+esac
+
+case "${REUSE_BUILD}" in
+  auto|0|1)
+    ;;
+  *)
+    echo "ERROR: REUSE_BUILD must be auto, 0, or 1, got '${REUSE_BUILD}'"
     exit 1
     ;;
 esac
@@ -98,6 +109,7 @@ done
 run_pipeline() {
   local build_dir="${ROOT_DIR}/build"
   local stage_dir="${ROOT_DIR}/.deb_stage"
+  local reuse_existing_build="0"
 
   if [[ "${CLEAN_BUILD}" == "1" ]]; then
     rm -rf "${build_dir}"
@@ -109,14 +121,35 @@ run_pipeline() {
   # shellcheck disable=SC2206
   local build_user_args=(${BUILD_ARGS})
 
-  cmake -S "${ROOT_DIR}" -B "${build_dir}" -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_INSTALL_PREFIX=/ \
-    "${cmake_user_args[@]}"
+  if [[ "${CLEAN_BUILD}" != "1" && -f "${build_dir}/CMakeCache.txt" ]]; then
+    case "${REUSE_BUILD}" in
+      auto|1)
+        reuse_existing_build="1"
+        ;;
+      0)
+        ;;
+    esac
+  fi
 
-  if [[ "${BUILD_VERBOSE}" == "1" ]]; then
-    cmake --build "${build_dir}" -- "${build_user_args[@]}" --verbose
+  if [[ "${REUSE_BUILD}" == "1" && "${reuse_existing_build}" != "1" ]]; then
+    echo "ERROR: REUSE_BUILD=1 was requested, but no reusable build cache was found in ${build_dir}."
+    echo "Hint: provide a prebuilt build/ artifact or set REUSE_BUILD=auto or 0."
+    return 1
+  fi
+
+  if [[ "${reuse_existing_build}" == "1" ]]; then
+    echo "[build] reusing existing build directory: ${build_dir}"
   else
-    cmake --build "${build_dir}" -- "${build_user_args[@]}"
+    echo "[build] configuring and compiling in: ${build_dir}"
+    cmake -S "${ROOT_DIR}" -B "${build_dir}" -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX=/ \
+      "${cmake_user_args[@]}"
+
+    if [[ "${BUILD_VERBOSE}" == "1" ]]; then
+      cmake --build "${build_dir}" -- "${build_user_args[@]}" --verbose
+    else
+      cmake --build "${build_dir}" -- "${build_user_args[@]}"
+    fi
   fi
 
   DESTDIR="${stage_dir}" cmake --install "${build_dir}"
@@ -231,6 +264,7 @@ EOPOSTINST
 
 echo "[build] building and packaging on host in ${ROOT_DIR}"
 echo "[build] include headers: ${INCLUDE_HEADERS}"
+echo "[build] reuse build: ${REUSE_BUILD}"
 if [[ "${LIVE_BUILD_OUTPUT}" == "1" ]]; then
   if run_pipeline > >(tee "${BUILD_LOG}") 2>&1; then
     rc=0
