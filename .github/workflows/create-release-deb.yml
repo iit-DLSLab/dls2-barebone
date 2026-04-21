@@ -43,7 +43,7 @@ jobs:
       image_name: dls2-dev-deb
       registry: ghcr.io
       context: external-docker/dockerfiles/dls2-dev-deb
-      dockerfile: external-docker/dockerfiles/dls2-dev-deb/Dockerfile
+      dockerfile: Dockerfile
       tag_override: ${{ needs.release_deb.outputs.version_tag }}
       workflow_artifact_name: ${{ needs.release_deb.outputs.deb_workflow_artifact_name }}
       artifact_download_path: external-docker/dockerfiles/dls2-dev-deb
