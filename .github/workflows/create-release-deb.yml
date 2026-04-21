@@ -47,7 +47,7 @@ jobs:
       dockerfile: external-docker/dockerfiles/dls2-dev-deb/Dockerfile
       tag_override: ${{ needs.release_deb.outputs.version_tag }}
       workflow_artifact_name: ${{ needs.release_deb.outputs.runtime_deb_workflow_artifact_name }}
-      artifact_download_path: external-docker/dockerfiles/dls2-dev-deb
+      artifact_download_path: external-docker/dockerfiles/dls2-dev-deb/artifacts
       extra_checkout_repository: iit-DLSLab/dls_docker
       extra_checkout_ref: deb
       extra_checkout_path: external-docker
@@ -67,7 +67,7 @@ jobs:
       dockerfile: external-docker/dockerfiles/dls2-dev-deb/Dockerfile
       tag_override: ${{ needs.release_deb.outputs.version_tag }}
       workflow_artifact_name: ${{ needs.release_deb.outputs.framework_deb_workflow_artifact_name }}
-      artifact_download_path: external-docker/dockerfiles/dls2-dev-deb
+      artifact_download_path: external-docker/dockerfiles/dls2-dev-deb/artifacts
       extra_checkout_repository: iit-DLSLab/dls_docker
       extra_checkout_ref: deb
       extra_checkout_path: external-docker
