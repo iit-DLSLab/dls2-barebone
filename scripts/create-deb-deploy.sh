@@ -87,7 +87,28 @@ rm -f \
   "${ART_DIR}/pkg_files_framework.txt" \
   "${BUILD_LOG}"
 
-for required_dir in dls2 robotlib gluecode; do
+readarray -t required_dirs < <(
+  awk '
+    match($0, /^[[:space:]]*add_subdirectory[[:space:]]*\(([[:space:]]*"[^"]+"|[[:space:]]*[^#)[:space:]]+)/) {
+      dir = substr($0, RSTART, RLENGTH)
+      sub(/^[[:space:]]*add_subdirectory[[:space:]]*\(/, "", dir)
+      sub(/^[[:space:]]+/, "", dir)
+      sub(/^"/, "", dir)
+      sub(/"$/, "", dir)
+      sub(/[[:space:]].*$/, "", dir)
+      if (dir !~ /^\$/ && dir !~ /^\// && dir !~ /\.\./) {
+        print dir
+      }
+    }
+  ' "${ROOT_DIR}/CMakeLists.txt" | sort -u
+)
+
+if [[ ${#required_dirs[@]} -eq 0 ]]; then
+  echo "ERROR: could not infer required source directories from ${ROOT_DIR}/CMakeLists.txt."
+  exit 1
+fi
+
+for required_dir in "${required_dirs[@]}"; do
   if [[ ! -f "${ROOT_DIR}/${required_dir}/CMakeLists.txt" ]]; then
     echo "ERROR: missing ${required_dir}/CMakeLists.txt under ${ROOT_DIR}."
     echo "Hint: submodules are not checked out on this runner."
