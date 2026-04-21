@@ -44,7 +44,7 @@ jobs:
       image_name: dls2-runtime
       registry: ghcr.io
       context: external-docker/dockerfiles/dls2-dev-deb
-      dockerfile: Dockerfile
+      dockerfile: external-docker/dockerfiles/dls2-dev-deb/Dockerfile
       tag_override: ${{ needs.release_deb.outputs.version_tag }}
       workflow_artifact_name: ${{ needs.release_deb.outputs.runtime_deb_workflow_artifact_name }}
       artifact_download_path: external-docker/dockerfiles/dls2-dev-deb
@@ -53,6 +53,7 @@ jobs:
       extra_checkout_path: external-docker
       extra_build_args: |
         DLS2_DEB_FILE=${{ needs.release_deb.outputs.runtime_deb_artifact_name }}
+      force_latest_tag: true
     secrets:
       CICD_PAT: ${{ secrets.CICD_PAT }}
 
@@ -63,7 +64,7 @@ jobs:
       image_name: dls2-framework
       registry: ghcr.io
       context: external-docker/dockerfiles/dls2-dev-deb
-      dockerfile: Dockerfile
+      dockerfile: external-docker/dockerfiles/dls2-dev-deb/Dockerfile
       tag_override: ${{ needs.release_deb.outputs.version_tag }}
       workflow_artifact_name: ${{ needs.release_deb.outputs.framework_deb_workflow_artifact_name }}
       artifact_download_path: external-docker/dockerfiles/dls2-dev-deb
@@ -72,5 +73,6 @@ jobs:
       extra_checkout_path: external-docker
       extra_build_args: |
         DLS2_DEB_FILE=${{ needs.release_deb.outputs.framework_deb_artifact_name }}
+      force_latest_tag: true
     secrets:
       CICD_PAT: ${{ secrets.CICD_PAT }}
