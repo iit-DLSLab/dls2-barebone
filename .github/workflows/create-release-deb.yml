@@ -20,16 +20,19 @@ jobs:
     uses: iit-DLSLab/cicd_tools/.github/workflows/dls2_build_test.yml@main
     with:
       test-command: "ls"
+      output_workflow_artifact_name: build
     secrets:
       GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
       CICD_PAT: ${{ secrets.CICD_PAT }}
 
   release_deb:
+    needs: build_test
     uses: iit-DLSLab/cicd_tools/.github/workflows/create-release-deb.yml@main
     with:
       package-name: "dls2"
       deb-script-path: "scripts/create-deb-deploy.sh"
       container: "ghcr.io/iit-dlslab/dls2-dev:latest"
+      workflow_artifact_name: ${{ needs.build_test.outputs.build_workflow_artifact_name }}
     secrets:
       CICD_PAT: ${{ secrets.CICD_PAT }}  
 
