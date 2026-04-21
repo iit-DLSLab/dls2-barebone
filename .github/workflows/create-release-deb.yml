@@ -43,6 +43,7 @@ jobs:
     with:
       image_name: dls2-runtime
       registry: ghcr.io
+      registry_pull_scope: iit-dlslab/dls2-dev@pull
       context: external-docker/dockerfiles/dls2-dev-deb
       dockerfile: external-docker/dockerfiles/dls2-dev-deb/Dockerfile
       tag_override: ${{ needs.release_deb.outputs.version_tag }}
@@ -63,6 +64,7 @@ jobs:
     with:
       image_name: dls2-framework
       registry: ghcr.io
+      registry_pull_scope: iit-dlslab/dls2-dev@pull
       context: external-docker/dockerfiles/dls2-dev-deb
       dockerfile: external-docker/dockerfiles/dls2-dev-deb/Dockerfile
       tag_override: ${{ needs.release_deb.outputs.version_tag }}
