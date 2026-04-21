@@ -49,7 +49,7 @@ jobs:
       workflow_artifact_name: ${{ needs.release_deb.outputs.runtime_deb_workflow_artifact_name }}
       artifact_download_path: external-docker/dockerfiles/dls2-dev-deb
       extra_checkout_repository: iit-DLSLab/dls_docker
-      extra_checkout_ref: main
+      extra_checkout_ref: deb
       extra_checkout_path: external-docker
       extra_build_args: |
         DLS2_DEB_FILE=${{ needs.release_deb.outputs.runtime_deb_artifact_name }}
@@ -68,7 +68,7 @@ jobs:
       workflow_artifact_name: ${{ needs.release_deb.outputs.framework_deb_workflow_artifact_name }}
       artifact_download_path: external-docker/dockerfiles/dls2-dev-deb
       extra_checkout_repository: iit-DLSLab/dls_docker
-      extra_checkout_ref: main
+      extra_checkout_ref: deb
       extra_checkout_path: external-docker
       extra_build_args: |
         DLS2_DEB_FILE=${{ needs.release_deb.outputs.framework_deb_artifact_name }}
