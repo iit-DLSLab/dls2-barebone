@@ -19,31 +19,19 @@ BUILD_LOG="${ART_DIR}/build.log"
 
 usage() {
   cat <<'EOF'
-Usage: create-deb-deploy.sh [--with-headers | --without-headers]
+Usage: create-deb-deploy.sh
 
 Options:
-  --with-headers     Keep installed header files in the generated .deb.
-  --without-headers  Exclude installed *.h, *.hpp, and *.tpp files from the .deb.
   -h, --help         Show this help message.
 
 Environment:
-  INCLUDE_HEADERS=1|0   Default header inclusion mode when no CLI flag is passed.
   REUSE_BUILD=auto|1|0  Reuse an existing build directory when possible. Defaults to auto.
 EOF
 }
 
-INCLUDE_HEADERS="${INCLUDE_HEADERS:-1}"
 REUSE_BUILD="${REUSE_BUILD:-auto}"
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --with-headers)
-      INCLUDE_HEADERS="1"
-      shift
-      ;;
-    --without-headers)
-      INCLUDE_HEADERS="0"
-      shift
-      ;;
     -h|--help)
       usage
       exit 0
@@ -55,15 +43,6 @@ while [[ $# -gt 0 ]]; do
       ;;
   esac
 done
-
-case "${INCLUDE_HEADERS}" in
-  0|1)
-    ;;
-  *)
-    echo "ERROR: INCLUDE_HEADERS must be 0 or 1, got '${INCLUDE_HEADERS}'"
-    exit 1
-    ;;
-esac
 
 case "${REUSE_BUILD}" in
   auto|0|1)
@@ -83,11 +62,16 @@ fi
 
 PACKAGE_NAME="${PACKAGE_NAME:-dls2}"
 MAINTAINER="${DEB_MAINTAINER:-Michele Pestarino <michele.pestarino@iit.it>}"
-PACKAGE_DESCRIPTION="${DEB_DESCRIPTION:-DLS2 runtime package}"
+RUNTIME_PACKAGE_NAME="${PACKAGE_NAME}-runtime"
+FRAMEWORK_PACKAGE_NAME="${PACKAGE_NAME}-framework"
+RUNTIME_PACKAGE_DESCRIPTION="${DEB_RUNTIME_DESCRIPTION:-DLS2 runtime package}"
+FRAMEWORK_PACKAGE_DESCRIPTION="${DEB_FRAMEWORK_DESCRIPTION:-DLS2 framework package}"
 DEB_DEPENDS="${DEB_DEPENDS:-python3, python3-psutil, libyaml-cpp0.8, libtinyxml2-10, libgtk-3-0t64 | libgtk-3-0, libcairo2, libglib2.0-0t64 | libglib2.0-0, libboost-filesystem1.83.0, libconsole-bridge1.0, libcap2-bin}"
 
-DEB_NAME="${PACKAGE_NAME}_${VERSION}_amd64.deb"
-DEB_PATH="${ROOT_DIR}/${DEB_NAME}"
+RUNTIME_DEB_NAME="${RUNTIME_PACKAGE_NAME}_${VERSION}_amd64.deb"
+FRAMEWORK_DEB_NAME="${FRAMEWORK_PACKAGE_NAME}_${VERSION}_amd64.deb"
+RUNTIME_DEB_PATH="${ROOT_DIR}/${RUNTIME_DEB_NAME}"
+FRAMEWORK_DEB_PATH="${ROOT_DIR}/${FRAMEWORK_DEB_NAME}"
 JOBS="${JOBS:-4}"
 LIVE_BUILD_OUTPUT="${LIVE_BUILD_OUTPUT:-0}"
 BUILD_VERBOSE="${BUILD_VERBOSE:-0}"
@@ -96,7 +80,12 @@ CMAKE_ARGS="${CMAKE_ARGS:-}"
 BUILD_ARGS="${BUILD_ARGS:--j${JOBS}}"
 
 mkdir -p "${ART_DIR}"
-rm -f "${DEB_PATH}" "${ART_DIR}/pkg_files.txt" "${BUILD_LOG}"
+rm -f \
+  "${RUNTIME_DEB_PATH}" \
+  "${FRAMEWORK_DEB_PATH}" \
+  "${ART_DIR}/pkg_files_runtime.txt" \
+  "${ART_DIR}/pkg_files_framework.txt" \
+  "${BUILD_LOG}"
 
 for required_dir in dls2 robotlib gluecode; do
   if [[ ! -f "${ROOT_DIR}/${required_dir}/CMakeLists.txt" ]]; then
@@ -108,13 +97,13 @@ done
 
 run_pipeline() {
   local build_dir="${ROOT_DIR}/build"
-  local stage_dir="${ROOT_DIR}/.deb_stage"
+  local base_stage_dir="${ROOT_DIR}/.deb_stage"
   local reuse_existing_build="0"
 
   if [[ "${CLEAN_BUILD}" == "1" ]]; then
     rm -rf "${build_dir}"
   fi
-  rm -rf "${stage_dir}"
+  rm -rf "${base_stage_dir}" "${ROOT_DIR}/.deb_stage_runtime" "${ROOT_DIR}/.deb_stage_framework"
 
   # shellcheck disable=SC2206
   local cmake_user_args=(${CMAKE_ARGS})
@@ -152,20 +141,13 @@ run_pipeline() {
     fi
   fi
 
-  DESTDIR="${stage_dir}" cmake --install "${build_dir}"
+  DESTDIR="${base_stage_dir}" cmake --install "${build_dir}"
 
-  if [[ "${INCLUDE_HEADERS}" == "0" && -d "${stage_dir}/usr/include" ]]; then
-    find "${stage_dir}/usr/include" -type f \
-      \( -name '*.h' -o -name '*.hpp' -o -name '*.tpp' \) \
-      -delete
-    find "${stage_dir}/usr/include" -depth -type d -empty -delete
-  fi
+  strip "${base_stage_dir}/usr/bin/dls2/dynamic_legged_systems_framework" || true
+  strip "${base_stage_dir}/usr/bin/dls2/child_process_launcher" || true
+  strip "${base_stage_dir}/usr/lib/librobotlib.so" || true
 
-  strip "${stage_dir}/usr/bin/dls2/dynamic_legged_systems_framework" || true
-  strip "${stage_dir}/usr/bin/dls2/child_process_launcher" || true
-  strip "${stage_dir}/usr/lib/librobotlib.so" || true
-
-  if [[ -f "${stage_dir}/usr/bin/dls" ]]; then
+  if [[ -f "${base_stage_dir}/usr/bin/dls" ]]; then
     awk '
       NR == 1 {
         print
@@ -186,33 +168,38 @@ run_pipeline() {
         next
       }
       { print }
-    ' "${stage_dir}/usr/bin/dls" > "${stage_dir}/usr/bin/dls.tmp"
-    mv "${stage_dir}/usr/bin/dls.tmp" "${stage_dir}/usr/bin/dls"
-    chmod +x "${stage_dir}/usr/bin/dls"
+    ' "${base_stage_dir}/usr/bin/dls" > "${base_stage_dir}/usr/bin/dls.tmp"
+    mv "${base_stage_dir}/usr/bin/dls.tmp" "${base_stage_dir}/usr/bin/dls"
+    chmod +x "${base_stage_dir}/usr/bin/dls"
   fi
 
-  mkdir -p "${stage_dir}/etc/profile.d" "${stage_dir}/DEBIAN"
-  cat > "${stage_dir}/etc/profile.d/dls2.sh" << "EOPROFILE"
+  mkdir -p "${base_stage_dir}/etc/profile.d"
+  cat > "${base_stage_dir}/etc/profile.d/dls2.sh" << "EOPROFILE"
 #!/bin/sh
 export GZ_SIM_RESOURCE_PATH="/usr/local/share/dls-gazebo/worlds"
 export DLS_SERVERS_PATH="/usr/include/dls2/util/messaging/servers.yaml"
 export DLS_SAFETY_LAYER_PATH="/usr/include/dls2/supervisor/data/safety_layer.yaml"
 export DLS_SCHEDULER_PATH="/usr/include/dls2/schedulers"
 EOPROFILE
-  chmod +x "${stage_dir}/etc/profile.d/dls2.sh"
+  chmod +x "${base_stage_dir}/etc/profile.d/dls2.sh"
 
-  cat > "${stage_dir}/DEBIAN/control" << EOCONTROL
-Package: ${PACKAGE_NAME}
+  write_package_metadata() {
+    local stage_dir="$1"
+    local package_name="$2"
+    local package_description="$3"
+    mkdir -p "${stage_dir}/DEBIAN"
+    cat > "${stage_dir}/DEBIAN/control" << EOCONTROL
+Package: ${package_name}
 Version: ${DEB_CONTROL_VERSION}
 Section: base
 Priority: optional
 Architecture: amd64
 Maintainer: ${MAINTAINER}
 Depends: ${DEB_DEPENDS}
-Description: ${PACKAGE_DESCRIPTION}
+Description: ${package_description}
 EOCONTROL
 
-  cat > "${stage_dir}/DEBIAN/postinst" << 'EOPOSTINST'
+    cat > "${stage_dir}/DEBIAN/postinst" << 'EOPOSTINST'
 #!/bin/sh
 set -e
 
@@ -231,39 +218,76 @@ fi
 
 exit 0
 EOPOSTINST
-  chmod 0755 "${stage_dir}/DEBIAN/postinst"
+    chmod 0755 "${stage_dir}/DEBIAN/postinst"
+  }
 
-  if ! find "${stage_dir}" -mindepth 1 \
-    ! -path "${stage_dir}/DEBIAN" \
-    ! -path "${stage_dir}/DEBIAN/*" \
-    ! -path "${stage_dir}/etc" \
-    ! -path "${stage_dir}/etc/profile.d" \
-    ! -path "${stage_dir}/etc/profile.d/dls2.sh" \
-    -print -quit | grep -q .; then
-    echo "ERROR: staged package payload is empty."
-    echo "Hint: cmake configure/build/install likely failed earlier, or the build cache points to a different source tree."
-    return 1
-  fi
+  package_variant() {
+    local variant="$1"
+    local include_headers="$2"
+    local package_name="$3"
+    local package_description="$4"
+    local deb_name="$5"
+    local pkg_list_path="$6"
+    local stage_dir="${ROOT_DIR}/.deb_stage_${variant}"
 
-  dpkg-deb --build "${stage_dir}" "${DEB_NAME}"
+    cp -a "${base_stage_dir}" "${stage_dir}"
 
-  dpkg-deb -c "${DEB_NAME}" \
-    | awk '
-        $1 !~ /^d/ {
-          for (i = 1; i <= NF; i++) {
-            if ($i ~ /^\.\//) {
-              print $i
-              break
+    if [[ "${include_headers}" == "0" && -d "${stage_dir}/usr/include" ]]; then
+      find "${stage_dir}/usr/include" -type f \
+        \( -name '*.h' -o -name '*.hpp' -o -name '*.tpp' \) \
+        -delete
+      find "${stage_dir}/usr/include" -depth -type d -empty -delete
+    fi
+
+    write_package_metadata "${stage_dir}" "${package_name}" "${package_description}"
+
+    if ! find "${stage_dir}" -mindepth 1 \
+      ! -path "${stage_dir}/DEBIAN" \
+      ! -path "${stage_dir}/DEBIAN/*" \
+      ! -path "${stage_dir}/etc" \
+      ! -path "${stage_dir}/etc/profile.d" \
+      ! -path "${stage_dir}/etc/profile.d/dls2.sh" \
+      -print -quit | grep -q .; then
+      echo "ERROR: staged package payload is empty for ${variant}."
+      echo "Hint: cmake configure/build/install likely failed earlier, or the build cache points to a different source tree."
+      return 1
+    fi
+
+    dpkg-deb --build "${stage_dir}" "${deb_name}"
+
+    dpkg-deb -c "${deb_name}" \
+      | awk '
+          $1 !~ /^d/ {
+            for (i = 1; i <= NF; i++) {
+              if ($i ~ /^\.\//) {
+                print $i
+                break
+              }
             }
           }
-        }
-      ' \
-    | sed -E 's#^\./#/#; s#/$##; s#//+#/#g' \
-    | sort -u > "${ART_DIR}/pkg_files.txt"
+        ' \
+      | sed -E 's#^\./#/#; s#/$##; s#//+#/#g' \
+      | sort -u > "${pkg_list_path}"
+  }
+
+  package_variant \
+    "runtime" \
+    "0" \
+    "${RUNTIME_PACKAGE_NAME}" \
+    "${RUNTIME_PACKAGE_DESCRIPTION}" \
+    "${RUNTIME_DEB_NAME}" \
+    "${ART_DIR}/pkg_files_runtime.txt"
+
+  package_variant \
+    "framework" \
+    "1" \
+    "${FRAMEWORK_PACKAGE_NAME}" \
+    "${FRAMEWORK_PACKAGE_DESCRIPTION}" \
+    "${FRAMEWORK_DEB_NAME}" \
+    "${ART_DIR}/pkg_files_framework.txt"
 }
 
 echo "[build] building and packaging on host in ${ROOT_DIR}"
-echo "[build] include headers: ${INCLUDE_HEADERS}"
 echo "[build] reuse build: ${REUSE_BUILD}"
 if [[ "${LIVE_BUILD_OUTPUT}" == "1" ]]; then
   if run_pipeline > >(tee "${BUILD_LOG}") 2>&1; then
@@ -285,12 +309,16 @@ if [[ ${rc} -ne 0 ]]; then
   exit ${rc}
 fi
 
-if [[ ! -f "${DEB_PATH}" ]]; then
-  echo "ERROR: .deb not created at ${DEB_PATH}"
+if [[ ! -f "${RUNTIME_DEB_PATH}" || ! -f "${FRAMEWORK_DEB_PATH}" ]]; then
+  echo "ERROR: expected .deb files were not created:"
+  echo "  - ${RUNTIME_DEB_PATH}"
+  echo "  - ${FRAMEWORK_DEB_PATH}"
   echo "See ${BUILD_LOG}"
   tail -n 120 "${BUILD_LOG}" || true
   exit 1
 fi
 
-echo "[build] OK: ${DEB_PATH}"
-echo "${DEB_PATH}"
+echo "[build] OK: ${RUNTIME_DEB_PATH}"
+echo "[build] OK: ${FRAMEWORK_DEB_PATH}"
+echo "${RUNTIME_DEB_PATH}"
+echo "${FRAMEWORK_DEB_PATH}"
