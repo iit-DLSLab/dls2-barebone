@@ -73,9 +73,14 @@ jobs:
             dpkg-deb --info "$deb"
 
             echo "--- matching entries in $deb"
-            dpkg-deb -c "$deb" | grep -E '\./usr/bin/dls($|/)|\./usr/local|^drwx.*/usr/bin/?$' || true
+            dpkg-deb -c "$deb" | awk '
+              /\.\/*usr\/bin\/dls($|\/)/ || /\.\/*usr\/local/ || /^drwx.*\.\/usr\/bin\/?$/ { print }
+            '
 
-            if ! dpkg-deb -c "$deb" | grep -Fq './usr/bin/dls'; then
+            if ! dpkg-deb -c "$deb" | awk '
+              index($0, "./usr/bin/dls") { found=1 }
+              END { exit(found ? 0 : 1) }
+            '; then
               echo "ERROR: $deb does not contain /usr/bin/dls"
               exit 1
             fi
