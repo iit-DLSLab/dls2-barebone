@@ -29,8 +29,7 @@ jobs:
     uses: iit-DLSLab/cicd_tools/.github/workflows/create-release-deb.yml@main
     with:
       package-name: "dls2"
-      deb-script-source: builtin
-      builtin-deb-script-path: scripts/create-deb-deploy.sh
+      deb-script-source: caller
       container: "ghcr.io/iit-dlslab/dls2-dev:latest"
       workflow_artifact_name: ${{ needs.build_test.outputs.build_workflow_artifact_name }}
       artifact_download_path: "."
@@ -38,8 +37,42 @@ jobs:
       GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
       CICD_PAT: ${{ secrets.CICD_PAT }}
 
-  publish_runtime_image:
+  validate_deb:
     needs: release_deb
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Download runtime .deb artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.release_deb.outputs.runtime_deb_workflow_artifact_name }}
+          path: runtime-deb
+
+      - name: Download framework .deb artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.release_deb.outputs.framework_deb_workflow_artifact_name }}
+          path: framework-deb
+
+      - name: Validate packaged binaries
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          runtime_deb="runtime-deb/${{ needs.release_deb.outputs.runtime_deb_artifact_name }}"
+          framework_deb="framework-deb/${{ needs.release_deb.outputs.framework_deb_artifact_name }}"
+
+          for deb in "$runtime_deb" "$framework_deb"; do
+            echo "Validating $deb"
+            if ! dpkg-deb -c "$deb" | grep -Fq './usr/bin/dls'; then
+              echo "ERROR: $deb does not contain /usr/bin/dls"
+              exit 1
+            fi
+          done
+
+  publish_runtime_image:
+    needs:
+      - release_deb
+      - validate_deb
     uses: iit-DLSLab/cicd_tools/.github/workflows/docker-publish.yml@main
     with:
       image_name: dls2-runtime
@@ -59,7 +92,9 @@ jobs:
       CICD_PAT: ${{ secrets.CICD_PAT }}
 
   publish_framework_image:
-    needs: release_deb
+    needs:
+      - release_deb
+      - validate_deb
     uses: iit-DLSLab/cicd_tools/.github/workflows/docker-publish.yml@main
     with:
       image_name: dls2-framework
