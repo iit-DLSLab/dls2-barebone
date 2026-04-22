@@ -31,8 +31,6 @@ jobs:
       package-name: "dls2"
       deb-script-source: caller
       container: "ghcr.io/iit-dlslab/dls2-dev:latest"
-      workflow_artifact_name: ${{ needs.build_test.outputs.build_workflow_artifact_name }}
-      artifact_download_path: "."
     secrets:
       GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
       CICD_PAT: ${{ secrets.CICD_PAT }}
