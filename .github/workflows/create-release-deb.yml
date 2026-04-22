@@ -59,8 +59,22 @@ jobs:
           runtime_deb="runtime-deb/${{ needs.release_deb.outputs.runtime_deb_artifact_name }}"
           framework_deb="framework-deb/${{ needs.release_deb.outputs.framework_deb_artifact_name }}"
 
+          echo "Downloaded artifact contents:"
+          find runtime-deb framework-deb -maxdepth 2 -type f -print | sort
+
           for deb in "$runtime_deb" "$framework_deb"; do
             echo "Validating $deb"
+            if [[ ! -f "$deb" ]]; then
+              echo "ERROR: expected package file not found: $deb"
+              exit 1
+            fi
+
+            echo "--- dpkg-deb --info $deb"
+            dpkg-deb --info "$deb"
+
+            echo "--- matching entries in $deb"
+            dpkg-deb -c "$deb" | grep -E '\./usr/bin/dls($|/)|\./usr/local|^drwx.*/usr/bin/?$' || true
+
             if ! dpkg-deb -c "$deb" | grep -Fq './usr/bin/dls'; then
               echo "ERROR: $deb does not contain /usr/bin/dls"
               exit 1
