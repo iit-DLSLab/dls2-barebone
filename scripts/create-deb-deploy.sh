@@ -149,17 +149,19 @@ run_pipeline() {
 
   if [[ "${reuse_existing_build}" == "1" ]]; then
     echo "[build] reusing existing build directory: ${build_dir}"
+    echo "[build] refreshing generated install files and source-tree outputs for this workspace"
   else
     echo "[build] configuring and compiling in: ${build_dir}"
-    cmake -S "${ROOT_DIR}" -B "${build_dir}" -DCMAKE_BUILD_TYPE=Release \
-      -DCMAKE_INSTALL_PREFIX=/ \
-      "${cmake_user_args[@]}"
+  fi
 
-    if [[ "${BUILD_VERBOSE}" == "1" ]]; then
-      cmake --build "${build_dir}" -- "${build_user_args[@]}" --verbose
-    else
-      cmake --build "${build_dir}" -- "${build_user_args[@]}"
-    fi
+  cmake -S "${ROOT_DIR}" -B "${build_dir}" -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX=/ \
+    "${cmake_user_args[@]}"
+
+  if [[ "${BUILD_VERBOSE}" == "1" ]]; then
+    cmake --build "${build_dir}" -- "${build_user_args[@]}" --verbose
+  else
+    cmake --build "${build_dir}" -- "${build_user_args[@]}"
   fi
 
   DESTDIR="${base_stage_dir}" cmake --install "${build_dir}"
