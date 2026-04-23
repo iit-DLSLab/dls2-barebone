@@ -29,7 +29,9 @@ jobs:
     uses: iit-DLSLab/cicd_tools/.github/workflows/create-release-deb.yml@main
     with:
       package-name: "dls2"
-      deb-script-source: caller
+      # deb-script-source: caller
+      deb-script-source: builtin
+      builtin-deb-script-path: scripts/create-deb-deploy.sh
       container: "ghcr.io/iit-dlslab/dls2-dev:latest"
       workflow_artifact_name: ${{ needs.build_test.outputs.build_workflow_artifact_name }}
       artifact_download_path: "."
