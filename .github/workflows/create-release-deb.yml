@@ -1,0 +1,135 @@
+name: Create Release and .deb Files Project
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+      - 'v*.*.*-rc*'
+
+env:
+  GNUTLS_CPUID_OVERRIDE: 0x1
+
+permissions:
+  contents: write
+  packages: write
+  id-token: write
+
+jobs:
+  build_test:
+    uses: iit-DLSLab/cicd_tools/.github/workflows/dls2_build_test.yml@main
+    with:
+      test-command: "ls"
+      output_workflow_artifact_name: build
+    secrets:
+      GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
+      CICD_PAT: ${{ secrets.CICD_PAT }}
+
+  release_deb:
+    needs: build_test
+    uses: iit-DLSLab/cicd_tools/.github/workflows/create-release-deb.yml@main
+    with:
+      package-name: "dls2"
+      # deb-script-source: caller
+      deb-script-source: builtin
+      builtin-deb-script-path: scripts/create-deb-deploy.sh
+      container: "ghcr.io/iit-dlslab/dls2-dev:latest"
+      workflow_artifact_name: ${{ needs.build_test.outputs.build_workflow_artifact_name }}
+      artifact_download_path: "."
+    secrets:
+      GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
+      CICD_PAT: ${{ secrets.CICD_PAT }}
+
+  validate_deb:
+    needs: release_deb
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Download runtime .deb artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.release_deb.outputs.runtime_deb_workflow_artifact_name }}
+          path: runtime-deb
+
+      - name: Download framework .deb artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.release_deb.outputs.framework_deb_workflow_artifact_name }}
+          path: framework-deb
+
+      - name: Validate packaged binaries
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          runtime_deb="runtime-deb/${{ needs.release_deb.outputs.runtime_deb_artifact_name }}"
+          framework_deb="framework-deb/${{ needs.release_deb.outputs.framework_deb_artifact_name }}"
+
+          echo "Downloaded artifact contents:"
+          find runtime-deb framework-deb -maxdepth 2 -type f -print | sort
+
+          for deb in "$runtime_deb" "$framework_deb"; do
+            echo "Validating $deb"
+            if [[ ! -f "$deb" ]]; then
+              echo "ERROR: expected package file not found: $deb"
+              exit 1
+            fi
+
+            echo "--- dpkg-deb --info $deb"
+            dpkg-deb --info "$deb"
+
+            echo "--- matching entries in $deb"
+            dpkg-deb -c "$deb" | awk '
+              /\.\/*usr\/bin\/dls($|\/)/ || /\.\/*usr\/local/ || /^drwx.*\.\/usr\/bin\/?$/ { print }
+            '
+
+            if ! dpkg-deb -c "$deb" | awk '
+              index($0, "./usr/bin/dls") { found=1 }
+              END { exit(found ? 0 : 1) }
+            '; then
+              echo "ERROR: $deb does not contain /usr/bin/dls"
+              exit 1
+            fi
+          done
+
+  publish_runtime_image:
+    needs:
+      - release_deb
+      - validate_deb
+    uses: iit-DLSLab/cicd_tools/.github/workflows/docker-publish.yml@main
+    with:
+      image_name: dls2-runtime
+      registry: ghcr.io
+      context: external-docker/dockerfiles/dls2-dev-deb
+      dockerfile: external-docker/dockerfiles/dls2-dev-deb/Dockerfile
+      tag_override: ${{ needs.release_deb.outputs.version_tag }}
+      workflow_artifact_name: ${{ needs.release_deb.outputs.runtime_deb_workflow_artifact_name }}
+      artifact_download_path: external-docker/dockerfiles/dls2-dev-deb/artifacts
+      extra_checkout_repository: iit-DLSLab/dls_docker
+      extra_checkout_ref: deb
+      extra_checkout_path: external-docker
+      extra_build_args: |
+        DLS2_DEB_FILE=${{ needs.release_deb.outputs.runtime_deb_artifact_name }}
+      force_latest_tag: true
+    secrets:
+      CICD_PAT: ${{ secrets.CICD_PAT }}
+
+  publish_framework_image:
+    needs:
+      - release_deb
+      - validate_deb
+    uses: iit-DLSLab/cicd_tools/.github/workflows/docker-publish.yml@main
+    with:
+      image_name: dls2-framework
+      registry: ghcr.io
+      context: external-docker/dockerfiles/dls2-dev-deb
+      dockerfile: external-docker/dockerfiles/dls2-dev-deb/Dockerfile
+      tag_override: ${{ needs.release_deb.outputs.version_tag }}
+      workflow_artifact_name: ${{ needs.release_deb.outputs.framework_deb_workflow_artifact_name }}
+      artifact_download_path: external-docker/dockerfiles/dls2-dev-deb/artifacts
+      extra_checkout_repository: iit-DLSLab/dls_docker
+      extra_checkout_ref: deb
+      extra_checkout_path: external-docker
+      extra_build_args: |
+        DLS2_DEB_FILE=${{ needs.release_deb.outputs.framework_deb_artifact_name }}
+      force_latest_tag: true
+    secrets:
+      CICD_PAT: ${{ secrets.CICD_PAT }}
