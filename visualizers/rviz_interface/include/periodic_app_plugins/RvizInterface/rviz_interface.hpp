@@ -48,6 +48,8 @@ namespace periodic_app_plugin
 		dls::ReaderPtr<dls2_interface::msg::BaseState> base_state_reader_;
 		dls::WriterPtr<sensor_msgs::msg::JointState> joint_state_writer_;
 		dls::WriterPtr<tf2_msgs::msg::TFMessage> tf_writer_;
+
+        void launchRobotStatePublisher(const std::string& robot_name);
     };
 } // namespace periodic_app_plugin
 

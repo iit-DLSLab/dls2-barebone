@@ -32,13 +32,13 @@ namespace periodic_app_plugin
                 new tf2_msgs::msg::TFMessagePubSubType()));
 
 		//define console functions here
-		// command_manager.addCommand("function_name",
-		// 									"Description",
-		// 									&RvizInterfacePlugin::function_name, this, {}, true);
+        launchRobotStatePublisher(robot->getName());
     }
 
     RvizInterface::~RvizInterface()
-    { }
+    {   //pkill the robot state publisher process when the plugin is destroyed
+        std::system("pkill -f robot_state_publisher");
+    }
     
     std::string RvizInterface::where()
     {
@@ -71,9 +71,26 @@ namespace periodic_app_plugin
         return true;
     }
 
-	// bool RvizInterface::function_name(){
-	// 	return true;
-	// }
+    void RvizInterface::launchRobotStatePublisher(const std::string& robot_name)
+    {
+        // Run robot state publisher in a separate shell command, so rviz can
+        // visualize the robot while this plugin publishes joint states and tf.
+        std::string urdf_path = "/usr/include/" + robot_name +
+            "_description/urdfs/" + robot_name + ".urdf";
+        const std::string ros2_setup_command =
+            ". /opt/ros/jazzy/setup.sh && "
+            "export ROS_DISCOVERY_SERVER='127.0.0.1:11812;127.0.0.1:11813;127.0.0.1:11814;127.0.0.1:11818' && "
+            "export ROS_SUPER_CLIENT=TRUE && ";
+        const std::string command =
+            ros2_setup_command +
+            "ros2 daemon stop && "
+            "ros2 daemon start && "
+            "setsid ros2 run robot_state_publisher robot_state_publisher "
+            "--ros-args "
+            "-p robot_description:=\"$(cat '" + urdf_path + "')\" "
+            "> /tmp/dls2_robot_state_publisher.log 2>&1 &";
+        std::system(command.c_str());
+    }
 
     extern "C" PeriodicAppPlugin *create(const std::string& ID, const std::string& robot_name)
     {
