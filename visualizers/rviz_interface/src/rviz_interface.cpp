@@ -37,7 +37,9 @@ namespace periodic_app_plugin
 
     RvizInterface::~RvizInterface()
     {   //pkill the robot state publisher process when the plugin is destroyed
-        std::system("pkill -f robot_state_publisher");
+        if(std::system("pkill -f robot_state_publisher") != 0) {
+            std::cerr << "Error occurred while trying to kill robot_state_publisher process." << std::endl;
+        }
     }
     
     std::string RvizInterface::where()
@@ -77,19 +79,34 @@ namespace periodic_app_plugin
         // visualize the robot while this plugin publishes joint states and tf.
         std::string urdf_path = "/usr/include/" + robot_name +
             "_description/urdfs/" + robot_name + ".urdf";
-        const std::string ros2_setup_command =
-            ". /opt/ros/jazzy/setup.sh && "
-            "export ROS_DISCOVERY_SERVER='127.0.0.1:11812;127.0.0.1:11813;127.0.0.1:11814;127.0.0.1:11818' && "
-            "export ROS_SUPER_CLIENT=TRUE && ";
-        const std::string command =
-            ros2_setup_command +
-            "ros2 daemon stop && "
-            "ros2 daemon start && "
+        const std::string bash_command =
+            ". /usr/bin/dls2/scripts/setup_ros2_for_dls2.bash && "
             "setsid ros2 run robot_state_publisher robot_state_publisher "
             "--ros-args "
-            "-p robot_description:=\"$(cat '" + urdf_path + "')\" "
+            "-p robot_description:=\"$(cat " + shellQuote(urdf_path) + ")\" "
             "> /tmp/dls2_robot_state_publisher.log 2>&1 &";
-        std::system(command.c_str());
+        const std::string command = "bash -lc " + shellQuote(bash_command);
+        if(std::system(command.c_str()) != 0) {
+            std::cerr << "Error occurred while trying to launch robot_state_publisher process." << std::endl;
+        }
+    }
+
+    std::string RvizInterface::shellQuote(const std::string& value)
+    {
+        std::string quoted = "'";
+        for(const char c : value)
+        {
+            if(c == '\'')
+            {
+                quoted += "'\\''";
+            }
+            else
+            {
+                quoted += c;
+            }
+        }
+        quoted += "'";
+        return quoted;
     }
 
     extern "C" PeriodicAppPlugin *create(const std::string& ID, const std::string& robot_name)

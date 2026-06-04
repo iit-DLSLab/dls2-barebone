@@ -38,6 +38,8 @@ namespace periodic_app_plugin
 
         bool deactivation(const std::chrono::system_clock::time_point& time) override;
 
+        std::string shellQuote(const std::string& value);
+
 		// console commands definitions
 		/* bool function_name();*/
 
