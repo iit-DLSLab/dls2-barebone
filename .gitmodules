@@ -7,3 +7,6 @@
 [submodule "gluecode"]
 	path = gluecode
 	url = git@github.com:iit-DLSLab/gluecode.git
+[submodule "dls2_ros2_interface"]
+	path = dls2_ros2_interface
+	url = git@github.com:iit-DLSLab/dls2_ros2_interface.git
