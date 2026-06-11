@@ -14,8 +14,7 @@ sensor_msgs::msg::JointState RvizMapping::map_blind_state(
     const dls2_interface::msg::BlindState& blind_state) const
 {
     sensor_msgs::msg::JointState joint_state;
-    joint_state.header().frame_id(
-        blind_state.frame_id().empty() ? base_frame_ : blind_state.frame_id());
+    joint_state.header().frame_id(base_frame_);
     set_stamp_from_nanoseconds(joint_state.header(), blind_state.timestamp());
 
     auto urdf_names = robot_->getNameMap();
@@ -61,8 +60,7 @@ tf2_msgs::msg::TFMessage RvizMapping::map_base_state(
     tf_message.transforms().resize(1);
 
     auto& transform_stamped = tf_message.transforms()[0];
-    transform_stamped.header().frame_id(
-        base_state.header().frame_id().empty() ? fixed_frame_ : base_state.header().frame_id());
+    transform_stamped.header().frame_id(fixed_frame_);
     transform_stamped.child_frame_id(base_frame_);
     set_stamp_from_nanoseconds(transform_stamped.header(), base_state.header().timestamp());
 

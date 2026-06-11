@@ -32,6 +32,29 @@ namespace periodic_app_plugin
                 new tf2_msgs::msg::TFMessagePubSubType()));
 
 		//define console functions here
+        command_manager.addCommand<std::string>
+        (
+            "setFixedFrame",
+            "Set the fixed frame for TF messages",
+            std::function<bool(std::string)>([&](std::string type)->bool
+            {
+                return this->rviz_mapping_.setFixedFrame(type), true;
+            }),
+            {},
+            true
+        );
+
+        command_manager.addCommand<std::string>
+        (
+            "setBaseFrame",
+            "Set the base frame for TF messages",
+            std::function<bool(std::string)>([&](std::string type)->bool
+            {
+                return this->rviz_mapping_.setBaseFrame(type), true;
+            }),
+            {},
+            true
+        );
         launchRobotStatePublisher(robot->getName());
     }
 
