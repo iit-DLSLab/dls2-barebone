@@ -60,7 +60,7 @@ target_link_libraries(${PROJECT_NAME}
 target_link_directories(${PROJECT_NAME}
 	PRIVATE
         /usr/lib/dls2
-		/usr/lib/dls2/periodic_app_plugins/${PROJECT_NAME}
+		${DLS_INSTALL_PERIODIC_APP_PLUGIN_DIR}/${PROJECT_NAME}
 )
 
 ## add custom messages
@@ -86,7 +86,7 @@ install(
 
 install(
 	TARGETS             ${PROJECT_NAME}
-	LIBRARY DESTINATION /usr/lib/dls2/periodic_app_plugins
+	LIBRARY DESTINATION ${DLS_INSTALL_PERIODIC_APP_PLUGIN_DIR}
 	COMPONENT           ${PROJECT_NAME}
 )
 
