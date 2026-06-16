@@ -11,8 +11,8 @@
 // messages includes
 #include "dls_messages/dds/BaseState.hpp"
 #include "dls_messages/dds/BlindState.hpp"
-#include "dls_messages/dds/JointState.hpp"
-#include "dls_messages/dds/TFMessage.hpp"
+#include "dls_messages/dds/ros2_interface/sensor_msgs/msg/JointState.hpp"
+#include "dls_messages/dds/ros2_interface/tf2_msgs/msg/TFMessage.hpp"
 
 #include "robotlib/robot_base.hpp"
 

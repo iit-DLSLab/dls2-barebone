@@ -2,8 +2,8 @@
 
 // topics
 // Include the TypeSupport of each message associated to each topic
-#include <dls_messages/dds/JointStatePubSubTypes.hpp>
-#include <dls_messages/dds/TFMessagePubSubTypes.hpp>
+#include <dls_messages/dds/ros2_interface/sensor_msgs/msg/JointStatePubSubTypes.hpp>
+#include <dls_messages/dds/ros2_interface/tf2_msgs/msg/TFMessagePubSubTypes.hpp>
 
 #include "dls2/topics/topics.hpp"
 
