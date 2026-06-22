@@ -24,8 +24,3 @@ foreach(idl_file IN LISTS DLS_IDL_FILES)
     RESULT_VARIABLE result
   )
 endforeach()
-
-# install setup_ros2_for_dls2 in DLS_INSTALL_SCRIPTS_DIR
-install(FILES ${DLS2_ROS2_INTERFACE_DIR}/scripts/setup_ros2_for_dls2.bash
-  DESTINATION ${DLS_INSTALL_SCRIPTS_DIR}
-)
