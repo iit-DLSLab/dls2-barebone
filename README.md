@@ -40,7 +40,7 @@ Feel free to open issues and/or PRs!
 
 | Component | Path | Description |
 |-----------|------|-------------|
-| **DLS2 Framework** | `dls2/` | Core control middleware. Contains modules for control, state estimation, messaging (DDS/IDL), plugins, tasks, state machines, signal handling, logging, and utilities. |
+| **DLS2 Framework** | `dls2/` | Core control middleware. Contains modules for control, state estimation, messaging (DDS/IDL), plugins, state machines, signal handling, logging, and utilities. |
 | **Robotlib** | `robotlib/` | Generic C++ robot abstraction layer. Provides a common API (kinematics, dynamics, Jacobians, data structures) that controllers target, independent of any specific robot morphology. Uses a factory pattern with `dlopen` for runtime-loadable robot libraries. |
 | **GlueCode** | `gluecode/` | Robot-specific implementation of the Robotlib interface based on Pinocchio. Loaded at runtime as a shared library. |
 | **RViz Interface** | `visualizers/rviz_interface/` | Visualization support for RViz. |
