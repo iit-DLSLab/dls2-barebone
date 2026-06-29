@@ -4,7 +4,7 @@ This repository provides a reusable, buildable base for DLS2 robot control appli
 
 # Documentation - TODO
 
-# Installation
+# Installation {#installation}
 ## Pull or build docker image
 You can either pull the docker image `ghcr.io/iit-dlslab/dls2-dev:latest` or you can build it from scratch.
 ### Pulling
@@ -32,6 +32,7 @@ make
 sudo make install
 ```
 # Run example - TODO
+To run an example, you can have a look at this repo, where a ready-to-use framework is provided for quadruped locomotion.
 
 # Contributing
 Feel free to open issues and/or PRs!
