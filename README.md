@@ -1,4 +1,4 @@
-# dls2-barebone {#dls2-barebone}
+# dls2-barebone
 
 This repository provides a reusable, buildable base for DLS2 robot control applications. It brings together the DLS2 framework, the Robotlib robot interface, robot-specific glue code, RViz visualization support, and a ROS 2 interface for shared message definitions and network settings.
 
