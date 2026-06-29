@@ -1,5 +1,5 @@
 # Getting started
-In order to install the DLS2 framework, please follow the \ref installation instruction of the dls2-barebone repo.
+In order to install the DLS2 framework, please follow the installation instruction of the @ref md_README "dls2-barebone" repo.
 
 ## Launch DLS2 with manual steps
 With the manual procedure you need to specify a set of layers that you want to launch and then you can load applications through the console. By **loading** you are actually **launching at run-time** your node.
