@@ -10,9 +10,9 @@ find_package(fastdds 3 REQUIRED)
 if(DEFINED DLS_MESSAGE_FOLDER)
 	list(APPEND CMAKE_MODULE_PATH "${DLS_MESSAGE_FOLDER}/cmake")
 else()
-	list(APPEND CMAKE_MODULE_PATH "/usr/include/dls_messages/cmake")
+	list(APPEND CMAKE_MODULE_PATH "/usr/include/generate_msg_library/cmake")
 endif()
-include(dls_message)
+include(generate_msg_library)
 
 # Set RELEASE as the default build type
 if(NOT CMAKE_BUILD_TYPE)
