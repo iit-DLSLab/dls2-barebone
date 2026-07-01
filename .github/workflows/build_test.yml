@@ -14,6 +14,7 @@ jobs:
     uses: iit-DLSLab/cicd_tools/.github/workflows/dls2_build_test.yml@main
     with:
       test-command: "ls"
+      build-script-path: .github/scripts/install_dls2_msgs.sh
     secrets:
       GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
       CICD_PAT: ${{ secrets.CICD_PAT }}
