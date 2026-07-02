@@ -47,23 +47,18 @@ if [ -z "$TAG" ]; then
 fi
 echo "Found release tag: $TAG"
 
-# Download all assets from that release
+# Download the dev .deb package from that release
 mkdir -p "$DOWNLOAD_DIR"
 gh release download "$TAG" \
     --repo "$REPO" \
-    --pattern "build.tar.gz" \
+    --pattern "dls-messages-dev.deb" \
     --dir "$DOWNLOAD_DIR" \
     --clobber
 
 echo "Downloaded assets:"
 ls -lR "$DOWNLOAD_DIR"
 
-# Extract the build tarball (the archive contains a top-level "build/" directory)
-tar -xzf "${DOWNLOAD_DIR}/build.tar.gz" -C "$DOWNLOAD_DIR"
-BUILD_DIR="${DOWNLOAD_DIR}/build"
-
-# Run the cmake install script directly, bypassing build-system checks that
-# reference absolute source paths from the original build environment.
-echo "Running cmake install script..."
-cmake -P "${BUILD_DIR}/cmake_install.cmake"
+# Install the .deb package (apt-get handles dependencies automatically)
+echo "Installing dls-messages-dev .deb..."
+sudo dpkg -i "$DOWNLOAD_DIR"/dls-messages-dev.deb
 echo "dls2_msgs installed successfully."
