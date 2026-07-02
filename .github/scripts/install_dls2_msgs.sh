@@ -65,5 +65,6 @@ BUILD_DIR="${DOWNLOAD_DIR}/build"
 # Run cmake --install on the extracted build directory to install headers and
 # libraries to the standard system paths (/usr/include/dls_messages, /usr/lib/dls2, etc.)
 echo "Running cmake --install..."
-cmake --install "$BUILD_DIR"
+cd "$BUILD_DIR"
+sudo make install
 echo "dls2_msgs installed successfully."
