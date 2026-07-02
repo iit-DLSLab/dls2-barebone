@@ -62,9 +62,8 @@ ls -lR "$DOWNLOAD_DIR"
 tar -xzf "${DOWNLOAD_DIR}/build.tar.gz" -C "$DOWNLOAD_DIR"
 BUILD_DIR="${DOWNLOAD_DIR}/build"
 
-# Run cmake --install on the extracted build directory to install headers and
-# libraries to the standard system paths (/usr/include/dls_messages, /usr/lib/dls2, etc.)
-echo "Running cmake --install..."
-cd "$BUILD_DIR"
-sudo make install
+# Run the cmake install script directly, bypassing build-system checks that
+# reference absolute source paths from the original build environment.
+echo "Running cmake install script..."
+cmake -P "${BUILD_DIR}/cmake_install.cmake"
 echo "dls2_msgs installed successfully."
