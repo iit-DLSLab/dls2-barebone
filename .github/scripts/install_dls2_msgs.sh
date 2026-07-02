@@ -58,10 +58,9 @@ gh release download "$TAG" \
 echo "Downloaded assets:"
 ls -lR "$DOWNLOAD_DIR"
 
-# Extract the build tarball
+# Extract the build tarball (the archive contains a top-level "build/" directory)
+tar -xzf "${DOWNLOAD_DIR}/build.tar.gz" -C "$DOWNLOAD_DIR"
 BUILD_DIR="${DOWNLOAD_DIR}/build"
-mkdir -p "$BUILD_DIR"
-tar -xzf "${DOWNLOAD_DIR}/build.tar.gz" -C "$BUILD_DIR"
 
 # Run cmake --install on the extracted build directory to install headers and
 # libraries to the standard system paths (/usr/include/dls_messages, /usr/lib/dls2, etc.)
