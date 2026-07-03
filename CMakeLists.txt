@@ -6,8 +6,14 @@ if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
 endif()
 
-set(DLS_MESSAGE_FOLDER ${CMAKE_CURRENT_SOURCE_DIR}/dls2/modules/messages)
+set(DLS_MESSAGE_FOLDER ${CMAKE_CURRENT_SOURCE_DIR}/dls2_msgs
+  CACHE PATH "Path to the dls2_msgs folder"
+)
 add_subdirectory(dls2)
+option(BUILD_DLS2_MSGS "Build the dls2_msgs submodule. Disable when dls2_msgs is pre-installed (e.g. in CI)." ON)
+if(BUILD_DLS2_MSGS)
+	add_subdirectory(dls2_msgs)
+endif()
 add_subdirectory(robotlib)
 add_subdirectory(gluecode)
 add_subdirectory(visualizers/rviz_interface)

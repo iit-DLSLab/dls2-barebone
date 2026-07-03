@@ -6,11 +6,12 @@ add_compile_options("-std=c++2a")
 
 find_package(fastcdr 2 REQUIRED)
 find_package(fastdds 3 REQUIRED)
+find_package(dls_messages REQUIRED)
 
 if(DEFINED DLS_MESSAGE_FOLDER)
 	list(APPEND CMAKE_MODULE_PATH "${DLS_MESSAGE_FOLDER}/cmake")
 else()
-	list(APPEND CMAKE_MODULE_PATH "/usr/include/generate_msg_library/cmake")
+	list(APPEND CMAKE_MODULE_PATH "/usr/include/dls_messages/cmake")
 endif()
 include(generate_msg_library)
 
@@ -59,7 +60,6 @@ target_link_libraries(${PROJECT_NAME}
 )
 target_link_directories(${PROJECT_NAME}
 	PRIVATE
-        /usr/lib/dls2
 		${DLS_INSTALL_PERIODIC_APP_PLUGIN_DIR}/${PROJECT_NAME}
 )
 
