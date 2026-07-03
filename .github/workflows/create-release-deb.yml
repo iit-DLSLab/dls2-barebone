@@ -20,6 +20,7 @@ jobs:
     with:
       test-command: "ls"
       output_workflow_artifact_name: build
+      cmake-arguments: "-DBUILD_DLS2_MSGS=OFF"
     secrets:
       GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
       CICD_PAT: ${{ secrets.CICD_PAT }}
