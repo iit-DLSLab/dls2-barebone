@@ -15,7 +15,7 @@ if(BUILD_DLS2_MSGS)
 	add_subdirectory(dls2_msgs)
 endif()
 add_subdirectory(robotlib)
-add_subdirectory(gluecode)
+add_subdirectory(pinocchio-gluecode)
 add_subdirectory(visualizers/rviz_interface)
 
 # generate ROS2 messages from IDL files each time CMake is run, to ensure they are always up to date with the IDL definitions
