@@ -7,7 +7,14 @@ This project is currently in **pre-release** and under active development.
 
 [![Build Test](https://github.com/iit-DLSLab/dls2-barebone/actions/workflows/build_test.yml/badge.svg)](https://github.com/iit-DLSLab/dls2-barebone/actions/workflows/build_test.yml)
 
-# Documentation - TODO
+# Documentation
+To generate the documentation:
+
+```bash
+cd dls2-barebone
+doxygen docs/Doxifile
+```
+To open the documentation double click on the file build/html/index.html.
 
 # Installation
 ## Pull or build docker image
