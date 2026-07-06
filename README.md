@@ -43,7 +43,7 @@ git clone --init --recursive https://github.com/iit-DLSLab/dls2-barebone.git
 ```
 ## Open docker image
 ```bash
-docker run -it \
+docker run -it --rm \
   --name dls_container \
   --hostname docker \
   --gpus all \
