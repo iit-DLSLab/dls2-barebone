@@ -28,24 +28,42 @@ doxygen docs/Doxifile
 To open the documentation double click on the file build/html/index.html.
 
 # Installation
-## Pull or build docker image
-You can either pull the docker image `ghcr.io/iit-dlslab/dls2-dev:latest` or you can build it from scratch.
-### Pulling
+## Pull the docker image
+You can pull the docker image with the following command:
 
-```docker pull ghcr.io/iit-dlslab/dls2-dev:latest```
-
-### Building - TODO
+```bash
+docker pull ghcr.io/iit-dlslab/dls2-dev:latest
+```
 
 ## Clone repository
 ```bash
-git clone --recursive https://github.com/iit-DLSLab/dls2-barebone.git
-cd dls2-barebone
+mkdir dls_ws
+cd dls_ws
+git clone --init --recursive https://github.com/iit-DLSLab/dls2-barebone.git
 ```
-## Open docker image - TODO
+## Open docker image
 ```bash
-docker run
-cd dls2-barebone
+docker run -it --rm \
+  --name dls_container \
+  --hostname docker \
+  --gpus all \
+  --privileged \
+  --network host \
+  -e DISPLAY="$DISPLAY" \
+  -e DLS=2 \
+  -v /tmp/.X11-unix:/tmp/.X11-unix:rw \
+  -v "$PWD:$PWD" \
+  -w "$PWD" \
+  ghcr.io/iit-dlslab/dls2-dev:latest \
+  /bin/bash
 ```
+
+## Attach to running container
+
+```bash
+docker exec -it dls_container /bin/bash
+```
+
 ## Build
 ```bash
 mkdir build && cd build
@@ -55,11 +73,34 @@ sudo make install
 ```
 The first compilation takes a bit of time because it needs to compile all the messages (the ROS2 default ones and the DLS2 ones).
 
-# Run example - TODO
-To run an example, you can have a look at this repo, where a ready-to-use framework is provided for quadruped locomotion.
+# Run example
+To run a simple node example follow these steps:
+
+* open a shell, run the container and build the code as explained in the "Open docker image" and "Build" sections above.
+```bash
+dls --servers --super
+```
+* open a second terminal, launch the console:
+```bash
+docker exec -it dls_container /bin/bash
+```
+```bash
+dls -lconsole
+```
+load the `hello_world_plugin`
+```bash
+Supervisor::loadPeriodicAppPlugin hello_world_plugin
+```
+and activate the plugin typing: 
+```bash
+hello_world_plugin::activate
+```
 
 # Contributing
 Feel free to open issues and/or PRs!
+
+# TODOs:
+* Integrated and ready-to-go examples with state estimator ([MUSE](https://github.com/iit-DLSLab/muse)) coming soon
 
 # Mantainers
 This repository is mantained by [Marco Marchitto](https://github.com/MMarcus95) and [Michele Pestarino](https://github.com/mich-pest).
