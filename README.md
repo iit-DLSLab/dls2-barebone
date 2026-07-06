@@ -77,24 +77,33 @@ The first compilation takes a bit of time because it needs to compile all the me
 To run a simple node example follow these steps:
 
 * open a shell, run the container and build the code as explained in the "Open docker image" and "Build" sections above.
-```bash
-dls --servers --super
-```
+* Run the fastdds servers and the supervisor
+
+  ```bash
+  dls --servers --super
+  ```
 * open a second terminal, launch the console:
-```bash
-docker exec -it dls_container /bin/bash
-```
-```bash
-dls -lconsole
-```
-load the `hello_world_plugin`
-```bash
-Supervisor::loadPeriodicAppPlugin hello_world_plugin
-```
-and activate the plugin typing: 
-```bash
-hello_world_plugin::activate
-```
+  ```bash
+  docker exec -it dls_container /bin/bash
+  ```
+  ```bash
+  dls -lconsole
+  ```
+* load the `hello_world_plugin`
+  ```bash
+  Supervisor::loadPeriodicAppPlugin hello_world_plugin
+  ```
+  and activate the plugin typing: 
+  ```bash
+  hello_world_plugin::activate
+  ```
+
+  You will see a dummy print in the terminal where you have launched the Supervisor.
+* unload the `hello_world_plugin`
+  ```bash
+  Supervisor::unloadPeriodicAppPlugin hello_world_plugin
+  ```
+* stop DLS2 with `CTRL-C` in any of the terminal
 
 # Contributing
 Feel free to open issues and/or PRs!
