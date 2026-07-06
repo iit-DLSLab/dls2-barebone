@@ -6,7 +6,10 @@ add_compile_options("-std=c++2a")
 
 find_package(fastcdr 2 REQUIRED)
 find_package(fastdds 3 REQUIRED)
-find_package(dls_messages REQUIRED)
+if (NOT TARGET dls_messages)
+	find_package(dls_messages REQUIRED)
+endif()
+
 
 if(DEFINED DLS_MESSAGE_FOLDER)
 	list(APPEND CMAKE_MODULE_PATH "${DLS_MESSAGE_FOLDER}/cmake")
