@@ -60,3 +60,6 @@ To run an example, you can have a look at this repo, where a ready-to-use framew
 
 # Contributing
 Feel free to open issues and/or PRs!
+
+# Mantainers
+This repository is mantained by [Marco Marchitto](https://github.com/MMarcus95) and [Michele Pestarino](https://github.com/mich-pest).
