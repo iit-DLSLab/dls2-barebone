@@ -77,22 +77,21 @@ The first compilation takes a bit of time because it needs to compile all the me
 To run a simple node example follow these steps:
 
 * open a shell, run the container and build the code as explained in the "Open docker image" and "Build" sections above.
-* run this executable from dls2-barebone root ```sudo ./dls2/bin/Release/hello_world_plugin_test```
-* in a different shell attach to the docker and run the discovery servers:
 ```bash
-docker exec -it dls_container /bin/bash
+dls --servers --super
 ```
-```bash
-dls --servers
-```
-* open a third terminal, launch the console:
+* open a second terminal, launch the console:
 ```bash
 docker exec -it dls_container /bin/bash
 ```
 ```bash
 dls -lconsole
 ```
-and activate the simple plugin typing: 
+load the `hello_world_plugin`
+```bash
+Supervisor::loadPeriodicAppPlugin hello_world_plugin
+```
+and activate the plugin typing: 
 ```bash
 hello_world_plugin::activate
 ```
