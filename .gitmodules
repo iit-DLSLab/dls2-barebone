@@ -4,12 +4,12 @@
 [submodule "robotlib"]
 	path = robotlib
 	url = git@github.com:iit-DLSLab/robotlib.git
-[submodule "gluecode"]
-	path = gluecode
-	url = git@github.com:iit-DLSLab/gluecode.git
 [submodule "dls2_ros2_interface"]
 	path = dls2_ros2_interface
 	url = git@github.com:iit-DLSLab/dls2_ros2_interface.git
 [submodule "dls2_msgs"]
 	path = dls2_msgs
 	url = git@github.com:iit-DLSLab/dls2_msgs.git
+[submodule "pinocchio-gluecode"]
+	path = pinocchio-gluecode
+	url = git@github.com:iit-DLSLab/pinocchio-gluecode.git
