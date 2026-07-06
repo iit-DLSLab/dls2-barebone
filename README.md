@@ -1,6 +1,7 @@
 # dls2-barebone
+This repository contains the official implementation of _D. Wildgrube Bertol, G. Fink, M. Marchitto, Y. Nisticò, M. Pestarino, and C. Semini, “DLS2: A distributed microcomponent-based robotic software architecture”_, which is currently under review.
 
-This repository provides a reusable, buildable base for DLS2 robot control applications. It brings together the DLS2 framework, the Robotlib robot interface, robot-specific glue code, RViz visualization support, and a ROS 2 interface for shared message definitions and network settings.
+It provides a reusable, buildable base for DLS2 robot control applications. It brings together the DLS2 framework, the Robotlib robot interface, the pinocchio-gluecode, RViz visualization support, and a ROS 2 interface for shared message definitions and network settings.
 
 # Project Status
 This project is currently in **pre-release** and under active development.
