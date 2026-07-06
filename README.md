@@ -28,9 +28,8 @@ You can either pull the docker image `ghcr.io/iit-dlslab/dls2-dev:latest` or you
 
 ## Clone repository
 ```bash
-git clone https://github.com/iit-DLSLab/dls2-barebone.git
+git clone --recursive https://github.com/iit-DLSLab/dls2-barebone.git
 cd dls2-barebone
-git submodule update --init --recursive
 ```
 ## Open docker image - TODO
 ```bash
@@ -44,6 +43,8 @@ cmake ..
 make
 sudo make install
 ```
+The first compilation takes a bit of time because it needs to compile all the messages (the ROS2 default ones and the DLS2 ones).
+
 # Run example - TODO
 To run an example, you can have a look at this repo, where a ready-to-use framework is provided for quadruped locomotion.
 
