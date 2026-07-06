@@ -21,7 +21,11 @@ if [ -z "$TOKEN" ]; then
     echo "::error::No GitHub token found (CICD_PAT or GITHUB_TOKEN). Cannot download release."
     exit 1
 fi
+echo "CICD_PAT: ${CICD_PAT}"
+echo "GITHUB_TOKEN: ${GITHUB_TOKEN}"
+
 export GH_TOKEN="$TOKEN"
+echo "GH_TOKEN: ${GH_TOKEN}"
 
 # Resolve the dls2_msgs submodule commit SHA pinned in this repo
 SHA="$(git ls-tree HEAD dls2_msgs | awk '{print $3}')"
