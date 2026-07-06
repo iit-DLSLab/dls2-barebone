@@ -99,5 +99,8 @@ hello_world_plugin::activate
 # Contributing
 Feel free to open issues and/or PRs!
 
+# TODOs:
+* Integrated and ready-to-go examples with state estimator ([MUSE](https://github.com/iit-DLSLab/muse)) coming soon
+
 # Mantainers
 This repository is mantained by [Marco Marchitto](https://github.com/MMarcus95) and [Michele Pestarino](https://github.com/mich-pest).
