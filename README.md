@@ -57,8 +57,7 @@ docker run -it --rm \
   ghcr.io/iit-dlslab/dls2-dev:latest \
   /bin/bash
 ```
-
-## Attach to running container
+Remember that to attach another terminal to the already running container you can do
 
 ```bash
 docker exec -it dls_container /bin/bash
@@ -66,6 +65,7 @@ docker exec -it dls_container /bin/bash
 
 ## Build
 ```bash
+cd dls2-barebone
 mkdir build && cd build
 cmake ..
 make
