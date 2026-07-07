@@ -39,7 +39,7 @@ docker pull ghcr.io/iit-dlslab/dls2-dev:latest
 ```bash
 mkdir dls_ws
 cd dls_ws
-git clone --init --recursive https://github.com/iit-DLSLab/dls2-barebone.git
+git clone --recursive https://github.com/iit-DLSLab/dls2-barebone.git
 ```
 ## Open docker image
 ```bash
