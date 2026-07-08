@@ -10,7 +10,7 @@ This project is currently in **pre-release** and under active development.
 
 # Repository Structure
 
-| Component | Path | Description |
+| Component | Path | Description | 
 |-----------|------|-------------|
 | **DLS2 Framework** | `dls2/` | Core control middleware. Contains modules for control, state estimation, messaging (DDS/IDL), plugins, state machines, signal handling, logging, and utilities. |
 | **Robotlib** | `robotlib/` | Generic C++ robot abstraction layer. Provides a common API (kinematics, dynamics, Jacobians, data structures) that controllers target, independent of any specific robot morphology. Uses a factory pattern with `dlopen` for runtime-loadable robot libraries. |
