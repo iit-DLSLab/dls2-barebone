@@ -1,7 +1,7 @@
 # dls2-barebone
-This repository contains the official implementation of _D. Wildgrube Bertol, G. Fink, M. Marchitto, Y. Nisticò, M. Pestarino, and C. Semini, “DLS2: A distributed microcomponent-based robotic software architecture”_, which is currently under review.
+This repository provides the implementation of the paper **D. Wildgrube Bertol, G. Fink, M. Marchitto, Y. Nisticò, M. Pestarino, and C. Semini, “DLS2: A distributed microcomponent-based robotic software architecture”**, which has been accepted to Results in Engineering, and it is available at https://doi.org/10.1016/j.rineng.2026.112048.
 
-It provides a reusable, buildable base for DLS2 robot control applications. It brings together the DLS2 framework, the Robotlib robot interface, the pinocchio-gluecode, RViz visualization support, and a ROS 2 interface for shared message definitions and network settings.
+It provides a reusable, buildable base for robot control applications. It brings together the DLS2 framework, the Robotlib robot interface, the pinocchio-gluecode, RViz visualization support, and a ROS 2 interface for shared message definitions and network settings.
 
 # Project Status
 This project is currently in **pre-release** and under active development.
@@ -110,6 +110,30 @@ Feel free to open issues and/or PRs!
 
 # TODOs:
 * Integrated and ready-to-go examples with state estimator ([MUSE](https://github.com/iit-DLSLab/muse)) coming soon
+
+
+## Citing the paper
+
+If you find the work useful, please consider citing our work using the following BibTex entry:
+```
+@ARTICLE{WILDGRUBEBERTOL2026112048,
+author = {Douglas Wildgrube Bertol and Geoff Fink and Marco Marchitto and Ylenia Nisticó and Michele Pestarino and Claudio Semini},
+journal = {Results in Engineering},
+title = {DLS2: A distributed microcomponent-based robotic software architecture},
+pages = {112048},
+year = {2026},
+issn = {2590-1230},
+doi = {https://doi.org/10.1016/j.rineng.2026.112048},
+keywords = {Robotics, Software Architecture, Distributed Systems, Real-time, Scalability}}
+```
+And the following one for the link to the GitHub codebase:
+```
+@misc{dls2github,
+   author = {D. Wildgrube Bertol, G. Fink, M. Marchitto, Y. Nisticò, M. Pestarino, and C. Semini},
+   title = {DLS2: A distributed microcomponent-based robotic software architecture},
+   howpublished = {https://github.com/iit-DLSLab/dls2-barebone},
+   year = {2026}}
+```
 
 # Mantainers
 This repository is mantained by [Marco Marchitto](https://github.com/MMarcus95) and [Michele Pestarino](https://github.com/mich-pest).
