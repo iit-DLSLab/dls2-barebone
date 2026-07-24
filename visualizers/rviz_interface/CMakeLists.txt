@@ -10,14 +10,6 @@ if (NOT TARGET dls_messages)
 	find_package(dls_messages REQUIRED)
 endif()
 
-
-if(DEFINED DLS_MESSAGE_FOLDER)
-	list(APPEND CMAKE_MODULE_PATH "${DLS_MESSAGE_FOLDER}/cmake")
-else()
-	list(APPEND CMAKE_MODULE_PATH "/usr/include/dls_messages/cmake")
-endif()
-include(generate_msg_library)
-
 # Set RELEASE as the default build type
 if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
