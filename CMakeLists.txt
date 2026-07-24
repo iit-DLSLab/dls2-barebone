@@ -30,3 +30,8 @@ foreach(idl_file IN LISTS DLS_IDL_FILES)
     RESULT_VARIABLE result
   )
 endforeach()
+
+# install setup_ros2_for_dls2.bash
+install(FILES dls2_ros2_interface/ros2_ws/src/dls2_interface/scripts/setup_ros2_for_dls2.bash
+  DESTINATION /usr/bin/dls2/scripts/
+)
