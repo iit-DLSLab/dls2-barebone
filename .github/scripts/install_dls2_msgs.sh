@@ -24,7 +24,7 @@ fi
 export GH_TOKEN="$TOKEN"
 
 # Resolve the dls2_msgs submodule commit SHA pinned in this repo
-SHA="$(git ls-tree HEAD dls2_msgs | awk '{print $3}')"
+SHA="$(git -C "$(dirname "${BASH_SOURCE[0]}")/../.." ls-tree HEAD dls2_msgs | awk '{print $3}')"
 echo "dls2_msgs submodule is pinned to commit: $SHA"
 
 # Find the release tag that points to that commit
