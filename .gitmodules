@@ -13,3 +13,9 @@
 [submodule "pinocchio-gluecode"]
 	path = pinocchio-gluecode
 	url = https://github.com/iit-DLSLab/pinocchio-gluecode.git
+[submodule "transport_interfaces"]
+	path = transport_interfaces
+	url = git@github.com:iit-DLSLab/transport_interfaces.git
+[submodule "dls_hal"]
+	path = dls_hal
+	url = git@github.com:iit-DLSLab/dls_hal.git

@@ -9,6 +9,8 @@ endif()
 set(DLS_MESSAGE_FOLDER ${CMAKE_CURRENT_SOURCE_DIR}/dls2_msgs
   CACHE PATH "Path to the dls2_msgs folder"
 )
+add_subdirectory(transport_interfaces)
+add_subdirectory(dls_hal)
 add_subdirectory(dls2)
 option(BUILD_DLS2_MSGS "Build the dls2_msgs submodule. Disable when dls2_msgs is pre-installed (e.g. in CI)." ON)
 if(BUILD_DLS2_MSGS)
