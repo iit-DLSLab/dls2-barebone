@@ -6,16 +6,17 @@ if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
 endif()
 
-set(DLS_MESSAGE_FOLDER ${CMAKE_CURRENT_SOURCE_DIR}/dls2_msgs
+set(DLS_MESSAGE_FOLDER ${CMAKE_CURRENT_SOURCE_DIR}/transport_interfaces/transports/fastdds/dls2_msgs
   CACHE PATH "Path to the dls2_msgs folder"
 )
+
+if(NOT CMAKE_INSTALL_RPATH)
+  set(CMAKE_INSTALL_RPATH "/opt/dls2/lib;/opt/dls2/hardwares/lib" CACHE STRING "RPATH for installed binaries" FORCE)
+endif()
+
 add_subdirectory(transport_interfaces)
 add_subdirectory(dls_hal)
 add_subdirectory(dls2)
-option(BUILD_DLS2_MSGS "Build the dls2_msgs submodule. Disable when dls2_msgs is pre-installed (e.g. in CI)." ON)
-if(BUILD_DLS2_MSGS)
-	add_subdirectory(dls2_msgs)
-endif()
 add_subdirectory(robotlib)
 add_subdirectory(pinocchio-gluecode)
 add_subdirectory(visualizers/rviz_interface)
