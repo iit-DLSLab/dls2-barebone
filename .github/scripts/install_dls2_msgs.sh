@@ -23,8 +23,8 @@ if [ -z "$TOKEN" ]; then
 fi
 export GH_TOKEN="$TOKEN"
 
-# Resolve the dls2_msgs submodule commit SHA pinned in this repo
-SHA="$(git -C "$(dirname "${BASH_SOURCE[0]}")/../.." ls-tree HEAD dls2_msgs | awk '{print $3}')"
+# Resolve the dls2_msgs submodule commit SHA pinned in transport_interfaces
+SHA="$(git -C "$(dirname "${BASH_SOURCE[0]}")/../../transport_interfaces" ls-tree HEAD transports/fastdds/dls2_msgs | awk '{print $3}')"
 echo "dls2_msgs submodule is pinned to commit: $SHA"
 
 # Find the release tag that points to that commit
