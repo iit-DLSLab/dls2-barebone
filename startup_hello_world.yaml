@@ -1,0 +1,18 @@
+# layers
+layers: [hardware, estimation, log]
+
+# applications
+hardwares: []
+controllers: []
+motion_generators: []
+estimators: []
+python_periodic_apps: []
+generic_app_plugins: []
+generic_periodic_app_plugins: [hello_world_plugin]
+
+# robot name
+robot_name: "pegasus"
+robot_spawning_height: 0.366
+
+# applications to be activated
+activate: [hello_world_plugin]
