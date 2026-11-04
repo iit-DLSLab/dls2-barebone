@@ -101,7 +101,7 @@ namespace periodic_app_plugin
         // Run robot state publisher in a separate shell command, so rviz can
         // visualize the robot while this plugin publishes joint states and tf.
         std::string urdf_path = "/usr/include/" + robot_name +
-            "_description/urdfs/" + robot_name + "_ros.urdf";
+            "-description/urdfs/" + robot_name + "_ros.urdf";
         const std::string bash_command =
             ". /usr/bin/dls2/scripts/setup_ros2_for_dls2.bash && "
             "setsid ros2 run robot_state_publisher robot_state_publisher "

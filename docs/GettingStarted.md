@@ -61,7 +61,7 @@ To start interacting with the DLS2 network, you can now launch the console layer
 
 At this point you are now ready to start sending commands to the DLS2 network through the console.
 
-You can also customize the set of nodes you want to launch by creating your yaml file. To do that the yaml file has to contain the following structure
+You can also customize the set of nodes you want to launch by creating your yaml file. For example you can use the following structure
 ```
     # layers
     layers: []
@@ -89,7 +89,7 @@ To launch your configuration file, you need to pass its path to the startup comm
 
     dls --startup=<path_to_your_startup.yml>/startup.yml
 
-The supervisor and the DDS servers are automatically launched when using the startup procedure.
+The supervisor and the DDS servers are launched by the startup procedure only when `run_supervisor` and `run_servers`, respectively, are explicitly set to `true` in the YAML file. Both options default to `false`; omitting an option or setting it to `false` skips launching that component. Automatic simulation model loading also requires `load_model: true`; omitting it or setting it to `false` skips model loading. For a list of all available entries, see the [startup configuration reference](../dls2/doc/StartupConfiguration.md).
 
 ## Mixed routine
 To launch the DLS2 network you could also use a mixed approach: load some layers and nodes with the startup routine and others with the manual steps.
