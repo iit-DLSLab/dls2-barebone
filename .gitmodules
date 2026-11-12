@@ -7,9 +7,6 @@
 [submodule "dls2_ros2_interface"]
 	path = dls2_ros2_interface
 	url = https://github.com/iit-DLSLab/dls2_ros2_interface.git
-[submodule "dls2_msgs"]
-	path = dls2_msgs
-	url = https://github.com/iit-DLSLab/dls2_msgs.git
 [submodule "pinocchio-gluecode"]
 	path = pinocchio-gluecode
 	url = https://github.com/iit-DLSLab/pinocchio-gluecode.git
