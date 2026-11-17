@@ -12,7 +12,7 @@
 class RvizMapping
 {
 public:
-    RvizMapping(const robotlib::RobotBasePtr& robot, const std::string& fixed_frame = "map", const std::string& base_frame = "base_link");
+    RvizMapping(const robotlib::RobotBasePtr& robot, const std::string& fixed_frame = "odom", const std::string& base_frame = "base_link");
     ~RvizMapping();
 
     sensor_msgs::msg::JointState map_blind_state(const dls2_interface::msg::BlindState& blind_state) const;
