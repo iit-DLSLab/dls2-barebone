@@ -9,6 +9,75 @@
 
 #include "robotlib/robot_factory.hpp"
 
+#include <yaml-cpp/yaml.h>
+
+#include <filesystem>
+#include <iostream>
+#include <map>
+
+namespace
+{
+    constexpr const char* kConfigPath = "/usr/include/dls2/periodic_app_plugins/rviz_interface/config/rviz_interface.yaml";
+
+    // Installed config, or the source one when running from the build tree
+    std::string configPath()
+    {
+        namespace fs = std::filesystem;
+        if (fs::exists(kConfigPath)) {
+            return kConfigPath;
+        }
+        const fs::path source_config =
+            fs::path(__FILE__).parent_path().parent_path() / "config" / "rviz_interface.yaml";
+        return fs::exists(source_config) ? source_config.string() : std::string{};
+    }
+
+    // type_hashes from the config: ROS type name -> "RIHS01_<64 hex>". Malformed ones are skipped.
+    std::map<std::string, std::string> loadTypeHashes()
+    {
+        std::map<std::string, std::string> hashes;
+        const std::string path = configPath();
+        if (path.empty()) {
+            std::cerr << "RVIZ INTERFACE: config not found (" << kConfigPath << "), no type hashes advertised" << std::endl;
+            return hashes;
+        }
+        try {
+            const YAML::Node type_hashes = YAML::LoadFile(path)["type_hashes"];
+            if (!type_hashes || !type_hashes.IsMap()) {
+                return hashes;
+            }
+            for (const auto& entry : type_hashes) {
+                const auto type_name = entry.first.as<std::string>();
+                const auto hash = entry.second.IsNull() ? std::string{} : entry.second.as<std::string>();
+                if (hash.empty()) {
+                    continue;
+                }
+                if (hash.size() != 71 || hash.compare(0, 7, "RIHS01_") != 0) {
+                    std::cerr << "RVIZ INTERFACE: invalid type hash of " << type_name << " '" << hash
+                              << "' (expected RIHS01_ followed by 64 hex digits), not advertised" << std::endl;
+                    continue;
+                }
+                hashes[type_name] = hash;
+            }
+        } catch (const std::exception& e) {
+            std::cerr << "RVIZ INTERFACE: cannot read " << path << " (" << e.what() << "), no type hashes advertised" << std::endl;
+        }
+        return hashes;
+    }
+
+    // Default writer QoS plus "typehash=<hash>;" in USER_DATA (rmw_fastrtps_cpp format) if configured
+    eprosima::fastdds::dds::DataWriterQos typeHashQos(const std::map<std::string, std::string>& hashes,
+                                                      const std::string& ros_type_name)
+    {
+        eprosima::fastdds::dds::DataWriterQos qos = eprosima::fastdds::dds::DATAWRITER_QOS_DEFAULT;
+        const auto it = hashes.find(ros_type_name);
+        if (it != hashes.end()) {
+            const std::string user_data = "typehash=" + it->second + ";";
+            qos.user_data().data_vec(std::vector<uint8_t>(user_data.begin(), user_data.end()));
+        }
+        return qos;
+    }
+}
+
 namespace periodic_app_plugin 
 {
     RvizInterface::RvizInterface (const std::string& ID, const robotlib::RobotBasePtr& robot)
@@ -21,15 +90,20 @@ namespace periodic_app_plugin
         base_state_reader_ = buildInput<dls2_interface::msg::BaseState>(
             dls::topics::high_level_estimation::base_state);
 
+        // ROS 2 type hashes advertised to ROS 2 / zenoh bridge peers (config: type_hashes)
+        const auto type_hashes = loadTypeHashes();
+
         joint_state_writer_ = buildOutput<sensor_msgs::msg::JointState>(
             dls::topicType(
                 "joint_states",
-                new sensor_msgs::msg::JointStatePubSubType()));
+                new sensor_msgs::msg::JointStatePubSubType()),
+            typeHashQos(type_hashes, "sensor_msgs/msg/JointState"));
 
         tf_writer_ = buildOutput<tf2_msgs::msg::TFMessage>(
             dls::topicType(
                 "tf",
-                new tf2_msgs::msg::TFMessagePubSubType()));
+                new tf2_msgs::msg::TFMessagePubSubType()),
+            typeHashQos(type_hashes, "tf2_msgs/msg/TFMessage"));
 
 		//define console functions here
         command_manager.addCommand<std::string>

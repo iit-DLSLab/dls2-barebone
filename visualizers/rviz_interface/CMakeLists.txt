@@ -80,6 +80,12 @@ install(
 )
 
 install(
+	FILES		config/rviz_interface.yaml
+	DESTINATION /usr/include/dls2/periodic_app_plugins/${PROJECT_NAME}/config
+	COMPONENT   ${PROJECT_NAME}
+)
+
+install(
 	TARGETS             ${PROJECT_NAME}
 	LIBRARY DESTINATION ${DLS_INSTALL_PERIODIC_APP_PLUGIN_DIR}
 	COMPONENT           ${PROJECT_NAME}
