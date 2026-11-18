@@ -52,6 +52,15 @@ target_link_libraries(${PROJECT_NAME}
 		dls_com
 		dls_messages
 		robotlib
+	PRIVATE
+		yaml-cpp
+)
+set(RVIZ_INTERFACE_CONFIG_INSTALL_DIR
+	"/usr/include/dls2/${PROJECT_NAME}/config"
+)
+target_compile_definitions(${PROJECT_NAME}
+	PRIVATE
+		RVIZ_INTERFACE_CONFIG_PATH="${RVIZ_INTERFACE_CONFIG_INSTALL_DIR}/rviz_interface.yaml"
 )
 target_link_directories(${PROJECT_NAME}
 	PRIVATE
@@ -77,6 +86,12 @@ install(
 	DESTINATION /usr/include/dls2/schedulers/
 	COMPONENT   ${PROJECT_NAME}
 	RENAME  	${PROJECT_NAME}.yaml
+)
+
+install(
+	FILES		config/rviz_interface.yaml
+	DESTINATION ${RVIZ_INTERFACE_CONFIG_INSTALL_DIR}
+	COMPONENT   ${PROJECT_NAME}
 )
 
 install(

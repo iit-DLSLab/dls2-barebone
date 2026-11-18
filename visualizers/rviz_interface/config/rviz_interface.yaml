@@ -1,0 +1,5 @@
+# Publish the fixed_frame -> base_frame TF (default: map -> base_link) computed
+# from the high-level BaseState. Disable it when another source (e.g. VIO)
+# provides the parent of base_link, since a TF frame can have only one parent.
+# Joint TFs (robot_state_publisher) are unaffected by this flag.
+publish_base_tf: false
