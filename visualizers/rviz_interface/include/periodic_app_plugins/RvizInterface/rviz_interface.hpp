@@ -51,6 +51,11 @@ namespace periodic_app_plugin
 		dls::WriterPtr<sensor_msgs::msg::JointState> joint_state_writer_;
 		dls::WriterPtr<tf2_msgs::msg::TFMessage> tf_writer_;
 
+        // If false, the fixed_frame -> base_frame TF is not published
+        // (e.g. when VIO already provides the parent of base_link).
+        bool publish_base_tf_ = true;
+
+        void loadConfig();
         void launchRobotStatePublisher(const std::string& robot_name);
     };
 } // namespace periodic_app_plugin

@@ -6,3 +6,8 @@
 type_hashes:
   tf2_msgs/msg/TFMessage: "RIHS01_e369d0f05a23ae52508854b66f6aa0437f3449d652e8cbf22d5abe85d020f087"
   sensor_msgs/msg/JointState: "RIHS01_a13ee3a330e346c9d87b5aa18d24e11690752bd33a0350f11c5882bc9179260e"
+# Publish the fixed_frame -> base_frame TF (default: map -> base_link) computed
+# from the high-level BaseState. Disable it when another source (e.g. VIO)
+# provides the parent of base_link, since a TF frame can have only one parent.
+# Joint TFs (robot_state_publisher) are unaffected by this flag.
+publish_base_tf: false

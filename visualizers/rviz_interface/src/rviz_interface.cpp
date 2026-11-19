@@ -84,6 +84,8 @@ namespace periodic_app_plugin
     : dls::PeriodicAppPlugin(ID)
     , rviz_mapping_(robot) // instantiate module
     {
+        loadConfig();
+
         blind_state_reader_ = buildInput<dls2_interface::msg::BlindState>(
             dls::topics::low_level_estimation::blind_state);
 
@@ -99,11 +101,16 @@ namespace periodic_app_plugin
                 new sensor_msgs::msg::JointStatePubSubType()),
             typeHashQos(type_hashes, "sensor_msgs/msg/JointState"));
 
-        tf_writer_ = buildOutput<tf2_msgs::msg::TFMessage>(
+        // Only create the TF output when enabled, so nothing (not even an
+        // empty TFMessage) is published on "tf" by this plugin otherwise.
+        if(publish_base_tf_)
+        {
+            tf_writer_ = buildOutput<tf2_msgs::msg::TFMessage>(
             dls::topicType(
                 "tf",
                 new tf2_msgs::msg::TFMessagePubSubType()),
             typeHashQos(type_hashes, "tf2_msgs/msg/TFMessage"));
+        }
 
 		//define console functions here
         command_manager.addCommand<std::string>
@@ -152,7 +159,10 @@ namespace periodic_app_plugin
         read();
 
         joint_state_writer_->msg = rviz_mapping_.map_blind_state(blind_state_reader_->msg);
-        tf_writer_->msg = rviz_mapping_.map_base_state(base_state_reader_->msg);
+        if(publish_base_tf_)
+        {
+            tf_writer_->msg = rviz_mapping_.map_base_state(base_state_reader_->msg);
+        }
 
         write();
     }
@@ -168,6 +178,25 @@ namespace periodic_app_plugin
 
     bool RvizInterface::deactivation(const std::chrono::system_clock::time_point& time){
         return true;
+    }
+
+    void RvizInterface::loadConfig()
+    {
+        try
+        {
+            const YAML::Node config = YAML::LoadFile(RVIZ_INTERFACE_CONFIG_PATH);
+            if(config["publish_base_tf"])
+            {
+                publish_base_tf_ = config["publish_base_tf"].as<bool>();
+            }
+        }
+        catch(const YAML::Exception& e)
+        {
+            std::cerr << "RVIZ INTERFACE: could not read " << RVIZ_INTERFACE_CONFIG_PATH
+                      << " (" << e.what() << "), using defaults." << std::endl;
+        }
+        std::cout << "RVIZ INTERFACE: publish_base_tf = "
+                  << (publish_base_tf_ ? "true" : "false") << std::endl;
     }
 
     void RvizInterface::launchRobotStatePublisher(const std::string& robot_name)
