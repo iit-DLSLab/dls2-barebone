@@ -53,7 +53,7 @@ namespace periodic_app_plugin
 
         // If false, the fixed_frame -> base_frame TF is not published
         // (e.g. when VIO already provides the parent of base_link).
-        bool publish_base_tf_ = true;
+        bool publish_base_tf_ = false;
 
         void loadConfig();
         void launchRobotStatePublisher(const std::string& robot_name);
