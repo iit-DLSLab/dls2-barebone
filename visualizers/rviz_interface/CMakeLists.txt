@@ -56,7 +56,7 @@ target_link_libraries(${PROJECT_NAME}
 		yaml-cpp
 )
 set(RVIZ_INTERFACE_CONFIG_INSTALL_DIR
-	"/usr/include/dls2/${PROJECT_NAME}/config"
+	"/usr/include/dls2/periodic_app_plugins/${PROJECT_NAME}/config"
 )
 target_compile_definitions(${PROJECT_NAME}
 	PRIVATE
@@ -90,7 +90,7 @@ install(
 
 install(
 	FILES		config/rviz_interface.yaml
-	DESTINATION /usr/include/dls2/periodic_app_plugins/${PROJECT_NAME}/config
+	DESTINATION ${RVIZ_INTERFACE_CONFIG_INSTALL_DIR}
 	COMPONENT   ${PROJECT_NAME}
 )
 
